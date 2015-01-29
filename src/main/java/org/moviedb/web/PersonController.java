@@ -5,6 +5,7 @@
  */
 package org.moviedb.web;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.moviedb.domain.Person;
@@ -51,6 +52,22 @@ public class PersonController {
     	Person person = personService.getPerson(id);
     	
     	model.addAttribute("person", person);
+    	
+    	List<String> widgetScripts = new ArrayList<String>();
+    	
+    	widgetScripts.add("/resources/js/widgets/widget1.js");
+    	widgetScripts.add("/resources/js/widgets/widget2.js");
+    	widgetScripts.add("/resources/js/widgets/widget3.js");
+    	
+    	List<String> widgets = new ArrayList<String>();
+    	
+    	widgets.add("/jsp/widgets/widget1.jsp");
+    	widgets.add("/jsp/widgets/widget2.jsp");
+    	widgets.add("/jsp/widgets/widget3.jsp");
+    	
+    	model.addAttribute("scripts", widgetScripts);
+    	model.addAttribute("widgets", widgets);
+    	
     	return "person";
     }
     
