@@ -28,6 +28,10 @@ $RECYCLE.BIN/
 # Icon must end with two \r
 Icon
 
+#Scala
+.idea/
+target/
+
 
 # Thumbnails
 ._*
