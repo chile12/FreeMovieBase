@@ -71,6 +71,8 @@ class ModelDistributor(config: ConfigImpl) extends Actor{
       if(virtuosoCollector != null)
         virtuosoCollector ! FinalizeOutput()
       filterMap.values.foreach(x => x._1 ! FinalizeOutput())
+      Thread.sleep(1000)
+      System.exit(0)
     }
     case SetStreamPauser(pauser) =>
     {

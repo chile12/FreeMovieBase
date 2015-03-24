@@ -12,13 +12,12 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="scala-sdk-2.11.4 (2)" level="application" />
-    <orderEntry type="library" name="org.openrdf.sesame:sesame-model:2.8.0" level="project" />
-    <orderEntry type="library" name="org.openrdf.sesame:sesame-rio-api:2.8.0" level="project" />
-    <orderEntry type="library" name="org.openrdf.sesame:sesame-rio-ntriples:2.8.0" level="project" />
     <orderEntry type="library" name="Maven: tr.com.srdc:virt-jena2:2.6.2" level="project" />
     <orderEntry type="library" name="Maven: tr.com.srdc:virtjdbc4:2.6.2" level="project" />
     <orderEntry type="library" name="com.typesafe.akka:akka-actor_2.11:2.3.9" level="project" />
+    <orderEntry type="library" name="org.openrdf.sesame:sesame-model:2.8.0" level="project" />
+    <orderEntry type="library" name="org.openrdf.sesame:sesame-rio-api:2.8.0" level="project" />
+    <orderEntry type="library" name="org.openrdf.sesame:sesame-rio-ntriples:2.8.0" level="project" />
     <orderEntry type="library" name="org.slf4j:slf4j-simple:1.7.10" level="project" />
-    <orderEntry type="library" name="org.openrdf.sesame:sesame-rio-turtle:2.8.0" level="project" />
   </component>
 </module>

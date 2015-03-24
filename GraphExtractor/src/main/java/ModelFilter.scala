@@ -106,6 +106,7 @@ class ModelFilter(subj: String, pred: String, obj: String, lang: String, outDir 
     val handler = new FilterRdfHandler()
     parser.setRDFHandler(handler)
     parser.setStopAtFirstError(false)
+    parser.parse(inputStream, "egal")
 
     val res : java.util.Set[Resource] = source match  {
         case TripleSource.Subject => handler.getModel().subjects()

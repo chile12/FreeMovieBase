@@ -1,4 +1,5 @@
 import java.io.{BufferedInputStream, FileInputStream}
+import java.net.URL
 import java.util.Date
 import java.util.zip.GZIPInputStream
 
@@ -24,7 +25,10 @@ class RdfFileReader() {
   {
     this.modelDistributor = modelDistributor
     //
-    inputStream = new GZIPInputStream(new BufferedInputStream(new FileInputStream(path)))
+    if(path.contains("://"))
+      inputStream = new GZIPInputStream(new URL(path).openStream())
+    else
+      inputStream = new GZIPInputStream(new BufferedInputStream(new FileInputStream(path)))
     parser = new NTriplesParser()
     parser.setRDFHandler(handler)
     parser.setStopAtFirstError(false)
