@@ -31,7 +31,6 @@ class RdfFileReader() {
       inputStream = new GZIPInputStream(new BufferedInputStream(new FileInputStream(path)))
     parser = new NTriplesParser()
     parser.setRDFHandler(handler)
-    parser.setStopAtFirstError(false)
     parser.setParseErrorListener(new FbParseErrorListener)
     date = new Date()
     pauseStrm = new PauseInputStream()

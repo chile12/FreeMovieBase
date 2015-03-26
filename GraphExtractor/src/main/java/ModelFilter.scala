@@ -1,32 +1,28 @@
 
-import java.io.{BufferedInputStream, FileInputStream, StringWriter}
-import java.util.zip.GZIPInputStream
+import java.io.StringWriter
 
 import ModelDistributor._
-import TripleSource.TripleSource
 import akka.actor.{Actor, ActorRef, Props}
-import org.openrdf.model.impl.{TreeModel, URIImpl}
-import org.openrdf.model.{Model, Literal, Resource, Statement}
-import org.openrdf.rio.RDFHandler
-import org.openrdf.rio.ntriples.{NTriplesParser, NTriplesWriter}
+import org.openrdf.model.impl.URIImpl
+import org.openrdf.model.{Literal, Resource, Statement}
+import org.openrdf.rio.ntriples.NTriplesWriter
 
-import scala.collection.{JavaConversions, immutable}
 import scala.util.control.Breaks._
 
 /**
  * Created by Chile on 3/17/2015.
  */
-class ModelFilter(subj: String, pred: String, obj: String, lang: String, outDir :String, virtusosCollector: ActorRef) extends Actor{
-  val subjList = if(subj != null && subj.startsWith("file:")) loadResourceList(subj.substring(5), TripleSource.Subject) else null
-  val predList = if(pred != null && pred.startsWith("file:")) loadResourceList(pred.substring(5), TripleSource.Predicate) else null
-  val objList = if(obj != null && obj.startsWith("file:")) loadResourceList(obj.substring(5), TripleSource.Object) else null
+class ModelFilter(subj: String, pred: String, obj: String, lang: String, virtusosCollector: ActorRef) extends Actor{
+  val subjList = if(subj != null && subj.startsWith("$")) ConfigImpl.filterInserts(subj) else null
+  val predList = if(pred != null && pred.startsWith("$")) ConfigImpl.filterInserts(pred) else null
+  val objList = if(obj != null && obj.startsWith("$")) ConfigImpl.filterInserts(obj) else null
 
   val subjUri = if(subj != null && subjList == null) new URIImpl(resolveNamespaces(subj)) else null
   val predUri = if(pred != null && predList == null) new URIImpl(resolveNamespaces(pred)) else null
   val objUri = if(obj != null && objList == null) new URIImpl(resolveNamespaces(obj)) else null
 
   val name = (if(subj != null) "subj_" + subj) + (if(pred != null) "_pred_" + pred).toString + (if(obj != null) "_obj_" + obj) + (if(lang != null) "_language_" + lang).toString
-  val fileOutput = context.actorOf(Props(classOf[GzOutputCollector], outDir + name.replace(':', '.') + ".ttl.gz"))
+  val fileOutput = context.actorOf(Props(classOf[GzOutputCollector], ConfigImpl.outputDirectory + name.replace(':', '.') + ".ttl.gz"))
   var firstInsert = true
 
   context.parent ! FilterReady(self.path.toString)
@@ -99,42 +95,7 @@ class ModelFilter(subj: String, pred: String, obj: String, lang: String, outDir 
     u
   }
 
-  def loadResourceList(path: String,source: TripleSource) : immutable.Set[Resource] =
-  {
-    val inputStream = new GZIPInputStream(new BufferedInputStream(new FileInputStream(path)))
-    val parser = new NTriplesParser()
-    val handler = new FilterRdfHandler()
-    parser.setRDFHandler(handler)
-    parser.setStopAtFirstError(false)
-    parser.parse(inputStream, "egal")
 
-    val res : java.util.Set[Resource] = source match  {
-        case TripleSource.Subject => handler.getModel().subjects()
-        case TripleSource.Predicate => handler.getModel().predicates().asInstanceOf[java.util.Set[Resource]]
-        case TripleSource.Object => handler.getModel().objects().asInstanceOf[java.util.Set[Resource]]
-      }
-    JavaConversions.asScalaSet[Resource](res).toSet
-  }
-
-  class FilterRdfHandler extends RDFHandler
-  {
-    private var model : TreeModel = new TreeModel()
-
-    override def startRDF(): Unit =    {  }
-
-    override def handleComment(s: String): Unit =     {}
-
-    override def handleStatement(statement: Statement): Unit =
-    {
-      model.add(statement)
-    }
-
-    override def endRDF(): Unit =     {  }
-
-    override def handleNamespace(s: String, s1: String): Unit = {}
-
-    def getModel() : Model = model
-  }
 }
 
 object ModelFilter{

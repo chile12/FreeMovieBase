@@ -9,16 +9,13 @@ object Main {
     assert((args.length > 0))
     val actorSystem = ActorSystem()
 
-    val config: ConfigImpl = new ConfigImpl(args(0))
+    new ConfigImpl(args(0))
     val rdfReader = new RdfFileReader()
-    val modelDistributor = actorSystem.actorOf(Props(classOf[ModelDistributor], config))
-    val pauseStream = rdfReader.prepareReading(config.inputFile, modelDistributor)
+    val readerController = actorSystem.actorOf(Props(classOf[StreamControlActor], rdfReader))
+    val modelDistributor = actorSystem.actorOf(Props(classOf[ModelDistributor], readerController))
+    val pauseStream = rdfReader.prepareReading(ConfigImpl.inputFile, modelDistributor)
     val streamPauser = ActorSystem().actorOf(Props(classOf[StreamPauser], pauseStream))
       modelDistributor ! SetStreamPauser(streamPauser)  //set pauseInputStream
 
-    if(args.length > 1)
-      rdfReader.startReading(args(1).toLong)
-    else
-      rdfReader.startReading()
   }
 }

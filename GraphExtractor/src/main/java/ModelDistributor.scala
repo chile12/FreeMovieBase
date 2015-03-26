@@ -7,16 +7,16 @@ import scala.collection.parallel.mutable.ParHashMap
 /**
  * Created by Chile on 3/17/2015.
  */
-class ModelDistributor(config: ConfigImpl) extends Actor{
+class ModelDistributor(reader: ActorRef) extends Actor{
 
   private var lockList : List[String] = List[String]()
-  private val virtuosoCollector = if(config.vHost == null) null  else context.actorOf(Props(classOf[VirtuosoCollector], config.vHost, config.vPort, config.vUser, config.vPass, config.graphName))
+  private val virtuosoCollector = if(ConfigImpl.vHost == null) null  else context.actorOf(Props(classOf[VirtuosoCollector], ConfigImpl.vHost, ConfigImpl.vPort, ConfigImpl.vUser, ConfigImpl.vPass, ConfigImpl.graphName))
   private val filterMap : ParHashMap[String, (ActorRef, Int, (String, String, String, String))] = new HashMap[String, (ActorRef, Int, (String, String, String, String))]().par
   private var streamPauser: ActorRef = null
   private var currentJobs =0
 
-  config.filter.foreach(f => {
-    val zw = context.actorOf(Props(classOf[ModelFilter], f(0), f(1), f(2), f(3), config.outputDirectory, virtuosoCollector))
+  ConfigImpl.filter.foreach(f => {
+    val zw = context.actorOf(Props(classOf[ModelFilter], f(0), f(1), f(2), f(3), virtuosoCollector))
     context.watch(zw)
     lockList = lockList.:::(List(zw.path.toString()))
     filterMap += ((zw.path.toString(), (zw, 0, (f(0), f(1), f(2), f(3)))))
@@ -57,7 +57,7 @@ class ModelDistributor(config: ConfigImpl) extends Actor{
     {
       lockList = lockList.filterNot(x => x == msg)
       if(lockList.size == 0 && streamPauser != null)
-        streamPauser ! UnPause()
+        reader ! Start()
     }
     case UnPause() =>
     {
@@ -90,6 +90,7 @@ object ModelDistributor{
   case class FilterReady(msg: String)
   case class Pause(ms: Int)
   case class UnPause()
+  case class Start()
   case class SetStreamPauser(pauser: ActorRef)
   case class InsertTtl(model: String)
   case class FinalizeOutput()
