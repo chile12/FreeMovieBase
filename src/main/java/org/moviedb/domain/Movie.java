@@ -1,48 +1,46 @@
 package org.moviedb.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
-@SuppressWarnings("serial")
-@Entity
-@Table(name="movies")
-@NamedQueries({
-	@NamedQuery(name = Movie.GET_BY_ID, query = "select m from Movie m where m.id = :id"),
-}) 
-public class Movie implements java.io.Serializable {
+public class Movie extends Topic {
 	
 	public Movie(){
 		
 	}
 	
-	public Movie(Integer id){
-		this.id = id;
+	private String title;
+	private String description;
+	private Date releaseDateGermany;
+	
+	private List<String> countries = new ArrayList<String>();
+	
+	public String getTitle() {
+	    return title;
 	}
 	
-	public static final String GET_BY_ID = "Movie.getById";
+	public void setTitle(String title) {
+	    this.title = title;
+	}
 	
-	@Id 
-	@GeneratedValue(strategy=GenerationType.AUTO)
-	@Column(name="MovieID")
-	private Integer id;
-	@Column
-	private String title;
-	
-	 public Integer getId() {
-			return id;
-		}
-	    
-	    public String getTitle() {
-	        return title;
-	    }
+    public String getDescription() {
+        return description;
+    }
 
-	    public void setTitle(String title) {
-	        this.title = title;
-	    }
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+	public Date getReleaseDateGermany() {
+		return releaseDateGermany;
+	}
+
+	public void setReleaseDateGermany(Date releaseDateGermany) {
+		this.releaseDateGermany = releaseDateGermany;
+	}
+
+	public List<String> getCountries() {
+		return countries;
+	}
 }

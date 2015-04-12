@@ -1,11 +1,11 @@
 package org.moviedb.web.config;  
 
-import org.moviedb.repository.MovieRepository;
-import org.moviedb.repository.PersonRepository;
 import org.moviedb.service.IMovieService;
 import org.moviedb.service.IPersonService;
+import org.moviedb.service.IWidgetService;
 import org.moviedb.service.MovieService;
 import org.moviedb.service.PersonService;
+import org.moviedb.service.WidgetService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -45,24 +45,17 @@ public class AppConfig extends WebMvcConfigurerAdapter {
         registry.addResourceHandler("/resources/**").addResourceLocations("/resources/");
     }
 	
-	@Bean  
-    public PersonRepository personRepository() {  
-		
-		PersonRepository pr = new PersonRepository();
-		return pr;
-	}
+	@Bean
+    public IWidgetService widgetService() {  
+		WidgetService ws = new WidgetService();
+        
+        return ws;
+    }
 	
-	@Bean  
-    public MovieRepository povieRepository() {  
-		
-		MovieRepository mr = new MovieRepository();
-		return mr;
-	}
-	
-	@Bean  
+	@Bean
     public IPersonService personService() {  
-        PersonService ps = new PersonService();        
-
+        PersonService ps = new PersonService();
+        
         return ps;
     }
 	

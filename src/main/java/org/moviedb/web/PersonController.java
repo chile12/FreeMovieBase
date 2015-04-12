@@ -5,12 +5,12 @@
  */
 package org.moviedb.web;
 
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.List;
 
 import org.moviedb.domain.Person;
-import org.moviedb.repository.PersonRepository;
 import org.moviedb.service.IPersonService;
+import org.moviedb.service.IWidgetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -30,77 +30,44 @@ public class PersonController {
 	
 	@Autowired
 	private IPersonService personService;
-    
-	private int stepWidth = 20;
+	
+	@Autowired
+	private IWidgetService widgetService;
 	
 	@RequestMapping("")
-    public String getPersons(@RequestParam(value="step", required=false, defaultValue = "0") int step, Model model) {
-		
-		int start = step * stepWidth;
-		int end = start + stepWidth;
-		
-		List<Person> persons = personService.getPersons(start, end);
+    public String getPersons(Model model) {
+		List<Person> persons = personService.getPersonsByAward("0g_w", 2012);
 		
 		model.addAttribute("persons", persons);
-		model.addAttribute("step", step);
-		model.addAttribute("morePersons", personService.getPersonsSize() > end);
 		return "persons";
 	}
 	
     @RequestMapping("/get")
-    public String getPerson(@RequestParam(value="id", required=true) int id, Model model) {
-    	Person person = personService.getPerson(id);
+    public String getPerson(@RequestParam(value="uri", required=true) String uri, Model model) {
     	
+    	Person person = personService.getPerson(uri);
+    	
+    	model.addAttribute("item", person);
     	model.addAttribute("person", person);
     	
-    	List<String> widgetScripts = new ArrayList<String>();
-    	
-    	widgetScripts.add("/resources/js/widgets/widget1.js");
-    	widgetScripts.add("/resources/js/widgets/widget2.js");
-    	widgetScripts.add("/resources/js/widgets/widget3.js");
-    	
-    	List<String> widgets = new ArrayList<String>();
-    	
-    	widgets.add("/jsp/widgets/widget1.jsp");
-    	widgets.add("/jsp/widgets/widget2.jsp");
-    	widgets.add("/jsp/widgets/widget3.jsp");
-    	
-    	model.addAttribute("scripts", widgetScripts);
-    	model.addAttribute("widgets", widgets);
+    	model.addAttribute("widgets", widgetService.getPersonWidgets());
     	
     	return "person";
     }
     
-    @RequestMapping(value = "/getEvents")
-	public ResponseEntity<String> getEvents(@RequestParam(value="id", required=true) int id) {
+    @RequestMapping(value = "/getAvardsCount")
+	public ResponseEntity<String> getAvardsCount(@RequestParam(value="uri", required=true) String uri) {
 		HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
         
-        Person person = personService.getPerson(id);
+        String json = "";
+		try {
+			json = personService.getAvardsCountJson(uri);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
-        return new ResponseEntity<String>(person.getEvents(), headers, HttpStatus.OK);
+        return new ResponseEntity<String>(json, headers, HttpStatus.OK);
 	}
-    
-    @RequestMapping("/update")
-    public String updatePerson(@RequestParam(value="id", required=true) int id, Model model) {
-    	
-    	Person person = personService.getPerson(id);
-    	
-    	personService.crawlePerson(person.getmID());
-    	
-    	person = personService.getPerson(id);
-    	
-    	model.addAttribute("person", person);
-    	return "person";
-    }
-    
-    @RequestMapping(value = "/crawlePerson")
-    public String crawlePerson(@RequestParam(value="search", required=true) String search, Model model){ 
-    	List<Person> persons = this.personService.crawlePersons(search);
-    	
-    	model.addAttribute("persons", persons);
-		model.addAttribute("step", 1);
-		model.addAttribute("morePersons", false);
-    	return "persons";
-    }
 }

@@ -3,8 +3,19 @@
        "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"
        "http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
 <tiles-definitions>
-	<definition name="defaultTemplate" template="/WEB-INF/template/template.jsp">
-		<put-attribute name="header" value="/WEB-INF/template/header.jsp" />
+	<definition name="baseTemplate" template="/WEB-INF/template/baseTemplate.jsp">
 		<put-attribute name="footer" value="/WEB-INF/template/footer.jsp" />
+	</definition>
+	<definition name="homeTemplate" extends="baseTemplate">
+		<put-attribute name="navigation" value="/WEB-INF/template/homeNavigation.jsp" />
+		<put-attribute name="baseBreadcrump" value="/WEB-INF/template/homeBreadcrump.jsp" />
+	</definition>
+	<definition name="personTemplate" extends="baseTemplate">
+		<put-attribute name="navigation" value="/WEB-INF/template/personNavigation.jsp" />
+		<put-attribute name="baseBreadcrump" value="/WEB-INF/template/personBreadcrump.jsp" />
+	</definition>
+	<definition name="movieTemplate" extends="baseTemplate">
+		<put-attribute name="navigation" value="/WEB-INF/template/movieNavigation.jsp" />
+		<put-attribute name="baseBreadcrump" value="/WEB-INF/template/movieBreadcrump.jsp" />
 	</definition>
 </tiles-definitions>

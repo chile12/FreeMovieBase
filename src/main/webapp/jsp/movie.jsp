@@ -8,17 +8,11 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
  
-<tiles:insertDefinition name="personTemplate">
-	<tiles:putAttribute name="stylesheets">
-		<c:forEach items="${widgets}" var="widget">
-			<c:if test="${not empty widget.cssPath}">
-			<link rel="stylesheet" href="<c:url value="${widget.cssPath}" />" />
-			</c:if>
-		</c:forEach>
-	</tiles:putAttribute>
+<tiles:insertDefinition name="movieTemplate">
 	<tiles:putAttribute name="scripts">
+
 		<script>
-			var personID = '${person.mID}';
+			var movieID = '${movie.mID}';
 			
 			$(function() {
 				$('#widgets > h2 > a').on('click', function (e) {
@@ -46,17 +40,17 @@
 	</tiles:putAttribute>
 	
 	<tiles:putAttribute name="lastBreadcrump">
-		<li><a href="#"><c:out value="${person.name}"/></a></li>
+		<li><a href="#"><c:out value="${movie.title}"/></a></li>
 	</tiles:putAttribute>
 
     <tiles:putAttribute name="body">
     
     <div class="content three_quarter first"> 
-		<h1><c:out value="${person.name}"/></h1>
+		<h1><c:out value="${movie.title}"/></h1>
 		<div class="group">
-			<img class="imgl borderedbox inspace-5" style="max-width:200px; max-height:300px" src="<c:url value="${person.imagePath}"/>" alt="" />
+			<img class="imgl borderedbox inspace-5" src="<c:url value="${movie.imagePath}"/>" alt="" />
 			<p>
-				<c:out value="${person.description}"/>
+				<c:out value="${movie.description}"/>
 			</p>
 		</div>
 		
@@ -79,7 +73,7 @@
 	<tiles:putAttribute name="secondaryNav">
 		<h2>Secondary Navigation</h2>
 		<ul>
-			<li>Test</li>
+			<li>TEST</li>
 		</ul>
 	</tiles:putAttribute>
 </tiles:insertDefinition>

@@ -1,16 +1,8 @@
 var eventsLoaded = false;
 	
 $(function() {
-	$('#eventLink').on('click', function (e) {
+	$('#widgetLink3').on('click', function (e) {
 		e.preventDefault();
-
-		var e2 = document.getElementById('events');
-     
-		if (e2.style.display == "none"){
-			e2.style.display = "";
-		} else {
-			e2.style.display = "none";
-		}
 
 		if(!eventsLoaded){
    
@@ -18,7 +10,7 @@ $(function() {
 		    width = 600 - margin.left - margin.right,
 		    height = 500 - margin.top - margin.bottom;
 
-		var parseDate = d3.time.format("%Y-%m-%d").parse;
+		var parseDate = d3.time.format("%Y-%m-%d+02:00").parse;
 		var x = d3.time.scale()
 				.range([0, width]);
 
@@ -34,26 +26,26 @@ $(function() {
           .orient("left");
 
       var lineMovie = d3.svg.line()
-          .x(function(d) { return x(d.date); })
-          .y(function(d) { return y(d.movies); });
+          .x(function(d) { return x(d.year.value); })
+          .y(function(d) { return y(d.count.value); });
 
-      var svg = d3.select("#events").append("svg")
+      var svg = d3.select("#widget3").append("svg")
           .attr("width", width + margin.left + margin.right)
           .attr("height", height + margin.top + margin.bottom)
         .append("g")
           .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
         
-        d3.json("/MovieDB/persons/getEvents?id=" + personID, function(error, data) {
+        d3.json("/MovieDB/persons/getAvardsCount?uri=" + personID, function(error, data) {
+        	
+        	data = data.results.bindings;
         	
         	data.forEach(function(d) {
-        		d.date = parseDate(d.date);
-				d.movies = +d.movies;
-				d.tv = +d.tv;
-				d.producer = +d.producer;
+        		d.year.value = parseDate(d.year.value);
+        		d.count.value = +d.count.value;
 			});
 
-        	x.domain(d3.extent(data, function(d) { return d.date; }));
-        	y.domain(d3.extent(data, function(d) { return d.movies; }));
+        	x.domain(d3.extent(data, function(d) { return d.year.value; }));
+        	y.domain(d3.extent(data, function(d) { return d.count.value; }));
 
         	svg.append("g")
         		.attr("class", "x axis")
@@ -68,7 +60,7 @@ $(function() {
 				.attr("y", 6)
 				.attr("dy", ".71em")
 				.style("text-anchor", "end")
-				.text("Ereignisse");
+				.text("Awards");
 
 			svg.append("path")
 				.datum(data)
@@ -80,27 +72,9 @@ $(function() {
 				.enter().append("circle")
 				.attr("class", "dot")
 				.attr("r", 3.5)
-				.attr("cx", function(d) { return x(d.date); })
-				.attr("cy", function(d) { return y(d.movies); })
-				.style("fill", "white");
-
-			svg.selectAll(".dot")
-				.data(data)
-				.enter().append("circle")
-				.attr("class", "dot")
-				.attr("r", 3.5)
-				.attr("cx", function(d) { return x(d.date); })
-				.attr("cy", function(d) { return y(d.tv); })
-				.style("fill", "yellow");
-
-			svg.selectAll(".dot")
-				.data(data)
-				.enter().append("circle")
-				.attr("class", "dot")
-				.attr("r", 3.5)
-				.attr("cx", function(d) { return x(d.date); })
-				.attr("cy", function(d) { return y(d.producer); })
-				.style("fill", "red");
+				.attr("cx", function(d) { return x(d.year.value); })
+				.attr("cy", function(d) { return y(d.count.value); })
+				.style("fill", "#888888");
         	});
 
         	eventsLoaded = true;

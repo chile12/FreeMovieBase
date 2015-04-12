@@ -8,20 +8,21 @@
 <%@ taglib uri="http://tiles.apache.org/tags-tiles" prefix="tiles" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
  
-<tiles:insertDefinition name="defaultTemplate">
+<tiles:insertDefinition name="personTemplate">
     <tiles:putAttribute name="body">
 
-	<h1>Personen</h1>
-	<c:forEach items="${persons}" var="person">
-		<a href="/MovieDB/persons/get?id=${person.id}">${person.name}</a><br />
-	</c:forEach>
-	<br />
-	<c:if test="${step > 0}">
-	<a href="/MovieDB/persons?step=${step - 1}">zurück</a>
-	</c:if>
-	<c:if test="${morePersons}">
-	<a href="/MovieDB/persons?step=${step + 1}">weiter</a>
-	</c:if>
+  	<h1>Die letzten Oscar-Gewinner</h1>
+  	<ul class="nospace clear">
+  	
+  		<c:set var="i" value="0"/>
+		<c:forEach items="${persons}" var="person">
+	 	<li class="one_quarter ${i % 4 == 0 ? " first" : ""}">
+	 		<a href="/MovieDB/persons/get?uri=${person.mID}">${person.name}</a><br />
+ 			<img class="imgl borderedbox inspace-5" style="height:80px" src="<c:url value="${person.imagePath}"/>" alt="" />
+ 			<c:set var="i" value="${i + 1}"/>
+		</li>
+		</c:forEach>
+  	</ul>
 
 	</tiles:putAttribute>
 </tiles:insertDefinition>
