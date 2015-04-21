@@ -11,13 +11,17 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="scala-sdk-2.11.4 (2)" level="application" />
-    <orderEntry type="library" name="Maven: tr.com.srdc:virt-jena2:2.6.2" level="project" />
-    <orderEntry type="library" name="Maven: tr.com.srdc:virtjdbc4:2.6.2" level="project" />
-    <orderEntry type="library" name="com.typesafe.akka:akka-actor_2.11:2.3.9" level="project" />
-    <orderEntry type="library" name="org.openrdf.sesame:sesame-model:2.8.0" level="project" />
-    <orderEntry type="library" name="org.openrdf.sesame:sesame-rio-api:2.8.0" level="project" />
-    <orderEntry type="library" name="org.openrdf.sesame:sesame-rio-ntriples:2.8.0" level="project" />
-    <orderEntry type="library" name="org.slf4j:slf4j-simple:1.7.10" level="project" />
+    <orderEntry type="library" name="Maven: org.openrdf.sesame:sesame-model:2.8.0" level="project" />
+    <orderEntry type="library" name="Maven: org.openrdf.sesame:sesame-util:2.8.0" level="project" />
+    <orderEntry type="library" name="Maven: org.openrdf.sesame:sesame-rio-api:2.8.0" level="project" />
+    <orderEntry type="library" name="Maven: org.openrdf.sesame:sesame-rio-ntriples:2.8.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.openrdf.sesame:sesame-rio-datatypes:2.8.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.openrdf.sesame:sesame-rio-languages:2.8.0" level="project" />
+    <orderEntry type="library" name="Maven: commons-io:commons-io:2.4" level="project" />
+    <orderEntry type="library" name="Maven: com.typesafe.akka:akka-actor_2.11:2.3.9" level="project" />
+    <orderEntry type="library" name="Maven: org.scala-lang:scala-library:2.11.5" level="project" />
+    <orderEntry type="library" name="Maven: com.typesafe:config:1.2.1" level="project" />
+    <orderEntry type="library" name="Maven: org.slf4j:slf4j-simple:1.7.10" level="project" />
+    <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.10" level="project" />
   </component>
 </module>

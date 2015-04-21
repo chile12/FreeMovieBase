@@ -21,7 +21,7 @@ import org.springframework.web.servlet.view.tiles3.TilesConfigurer;
 @EnableWebMvc   
 public class AppConfig extends WebMvcConfigurerAdapter {  
 	
-	@Bean  
+	/*@Bean
     public UrlBasedViewResolver setupViewResolver() {  
         UrlBasedViewResolver resolver = new UrlBasedViewResolver();  
         resolver.setPrefix("/jsp/");
@@ -64,5 +64,5 @@ public class AppConfig extends WebMvcConfigurerAdapter {
 		MovieService ms = new MovieService();
 		
 		return ms;
-	}
+	}*/
 }  
