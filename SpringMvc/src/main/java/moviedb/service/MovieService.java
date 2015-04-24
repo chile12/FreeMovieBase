@@ -146,30 +146,17 @@ public class MovieService  extends BaseService implements IMovieService {
     	}
     	
     	if(getImagesCount > 0){
-    		movie.getImagePaths().addAll(getImageUrls(movie, getImagesCount));
+    		movie.getImagePaths().addAll(getImageUrls(movie));
 			
 			if(movie.getImagePaths().size() > 0)
 				movie.setImagePath(movie.getImagePaths().get(0));
     	}
 		
     	
-    	movie.getCountries().addAll(getCountries(movie));
+    	movie.getCountries().
+                addAll(getCountries(movie));
     	
 		return movie;
-    }
-    
-    private List<String> getImageUrls(Movie movie, int imageCachingCount){
-			
-		String query = "PREFIX ns: <http://rdf.freebase.com/ns/> " +
-				"SELECT DISTINCT (CONCAT(CONCAT(\"https://usercontent.googleapis.com/freebase/v1/image/\", REPLACE(SUBSTR(str(?image), bif:strrchr(str(?image), '/')+2), '\\\\.', '\\\\/')), '?maxwidth=333&maxheight=333&mode=fit') as ?imageurl) " +
-				"FROM <http://fmb.org> " +
-				"WHERE {?film ns:type.object.type ns:film.film. " +
-				"?film ns:common.topic.image ?image. " +
-				"FILTER (?film = ns:%s)}";
-
-		query = String.format(query, "m." + movie.getmID());
-		
-		return getImageUrls(query, imageCachingCount);
     }
     
     private List<String> getCountries(Movie movie){

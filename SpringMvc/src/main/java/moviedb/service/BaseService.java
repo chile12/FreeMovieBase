@@ -5,7 +5,9 @@
  */
 package moviedb.service;
 
+import moviedb.domain.Topic;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.web.context.ServletContextAware;
 
@@ -17,6 +19,7 @@ import java.net.URLEncoder;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -27,87 +30,133 @@ public abstract class BaseService implements ServletContextAware {
 
 	private ServletContext servletContext;
 	
-	protected String baseQueryUrl = "http://vmdbpedia.informatik.uni-leipzig.de:8890/sparql?format=json&query=";
-	protected String relativeEntitiesPath = "/resources/images/entities/";
+	protected String baseFreebaseQueryUrl = "http://vmdbpedia.informatik.uni-leipzig.de:8890/sparql?format=json&query=";
+    protected String baseWikipediaQueryUrl = "http://dbpedia.org/sparql/default-graph-uri=http%3A%2F%2Fdbpedia.org?format=json&query=";
+	protected String relativeEntitiesPath = "/resources/images/";
 	
-	protected List<String> getImageUrls(String query, int getImagesCount){
+	protected List<String> getImageUrls(Topic top){
 		
 		List<String> urls = new ArrayList<String>();
-		
-		try {
-		
-			query = URLEncoder.encode(query, "UTF-8");
-			
-			query = baseQueryUrl + query;
-
-			String resultString = getResponse(query);
-			
-			JSONObject result = new JSONObject(resultString);
-			JSONArray arr = result.getJSONObject("results").getJSONArray("bindings");
-			
-			int count = getImagesCount >  arr.length() ? arr.length() : getImagesCount;
-			
-			for(int i = 0 ; i < count; i++){
-				JSONObject imageJson = arr.getJSONObject(i);
-				
-				String url = imageJson.getJSONObject("imageurl").getString("value"); 
-				
-				System.out.println("image source url: " + url);
-				
-				url = cacheImage(url);
-				
-				System.out.println("image cached url: " + url);
-				
-				urls.add(url);
-			}
-			
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
+        try {
+            urls.add(getWikipediaImg(top.getPageID()));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        urls.addAll(getFreebaseImgUrl(top.getmID()));
+        urls.removeAll(Collections.singleton(null));
 		return urls;
 	}
+
+    private List<String> getFreebaseImgUrl(String id)
+    {
+        try{
+            String query = "PREFIX ns: <http://rdf.freebase.com/ns/> " +
+                    "SELECT DISTINCT (CONCAT(CONCAT(\"https://usercontent.googleapis.com/freebase/v1/image/\", REPLACE(SUBSTR(str(?image), bif:strrchr(str(?image), '/')+2), '\\\\.', '\\\\/')), '?maxwidth=333&maxheight=333&mode=fit') as ?imageurl) " +
+                    "FROM <http://fmb.org> " +
+                    "WHERE {?film ns:common.topic.image ?image. " +
+                    "FILTER (?film = ns:%s)}";
+
+            query = String.format(query, "m." + id);
+            query = baseFreebaseQueryUrl + URLEncoder.encode(query, "UTF-8");
+
+            String resultString = getResponse(query);
+
+            JSONObject result = new JSONObject(resultString);
+            JSONArray arr = result.getJSONObject("results").getJSONArray("bindings");
+
+            if(arr.length() == 0)
+                return null;
+
+            List<String> urls = new ArrayList<String>();
+            for(int i =0; i < arr.length(); i++) {
+                String url = arr.getJSONObject(0).getJSONObject("imageurl").getString("value");
+                urls.add(cacheImage(url));
+            }
+            return urls;
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private String getWikipediaImg(String pageId) throws UnsupportedEncodingException, JSONException {
+            String query = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
+                    "PREFIX dbpedia: <http://dbpedia.org/ontology/>\n" +
+                    "Select ?page ?imgurl\n" +
+                    "FROM <http://dbpedia.org>\n" +
+                    "WHERE{\n" +
+                    "?page dbpedia:wikiPageID %s.\n" +
+                    "OPTIONAL{?page foaf:depiction ?imgurl}}";
+        query = baseWikipediaQueryUrl + URLEncoder.encode(String.format(query, pageId), "UTF-8");
+
+        String resultString = null;
+        try {
+            resultString = getResponse(query);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+            JSONArray arr = null;
+
+            if (resultString != null)
+                arr = new JSONObject(resultString).getJSONObject("results").getJSONArray("bindings");
+
+        if (resultString == null || arr == null || arr.length() == 0) {
+                try {
+                    resultString = getResponse(query.replace("commons", "en"));
+
+                    if (resultString != null)
+                        arr = new JSONObject(resultString).getJSONObject("results").getJSONArray("bindings");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (arr == null || arr.length() == 0)
+                return null;
+
+            String url = arr.getJSONObject(0).getJSONObject("imgurl").getString("value");
+            url = cacheImage(url);
+            return url;
+    }
 	
 	private String cacheImage(String url){
 		
-		String imageID = url.substring(url.indexOf("/image/m/") + 9, url.indexOf("?"));
-		
-    	String imagePath = getEnitiesPath() + "/" + imageID + ".jpg";
-    	
-    	//System.out.println("entity path: " + getEnitiesPath());
-    	
-    	File image = new File(imagePath);
-    	
+		String imageID = null;
+        if(url.contains("/image/m"))
+            imageID = "freebase_" + url.substring(url.indexOf("/image/m/") + 9, url.indexOf("?")) + ".jpg";
+        else
+            imageID = "wikipedia_" + url.substring(url.lastIndexOf("/") + 1);
+
+    	File image = new File(getEnitiesPath() + imageID);
     	if(!image.exists()){
 	    	try {
 				URL imageUrl = new URL(url);
-				
+                image.createNewFile();
 				ReadableByteChannel rbc = Channels.newChannel(imageUrl.openStream());
-				
-				FileOutputStream fos = new FileOutputStream(imagePath);
-				fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+				FileOutputStream fos = new FileOutputStream(image);
+				long byteCount = fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
 				fos.close();
+
+                if(byteCount == 0)
+                    return null;
 				
 			} catch (IOException e) {
-				
-				System.out.println(imageID + " not cached");
-				
-				return url;
+				return null;
 			}
     	}
     	
-    	return url = relativeEntitiesPath + imageID + ".jpg";
+    	return relativeEntitiesPath + imageID;
 	}
 	
 	protected JSONArray getJSONArray(String query) throws IOException{
 		
 		query = URLEncoder.encode(query, "UTF-8");
 		
-		query = baseQueryUrl + query;
+		query = baseFreebaseQueryUrl + query;
 		
 		String resultString = getResponse(query);
 		

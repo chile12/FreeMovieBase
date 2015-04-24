@@ -47,7 +47,7 @@ public class PersonService extends BaseService implements IPersonService {
         	query = String.format(query, "m." + uri);
 			query = URLEncoder.encode(query, "UTF-8");
 			
-			query = baseQueryUrl + query;
+			query = baseFreebaseQueryUrl + query;
 			
 			System.out.println(query);
 			
@@ -121,7 +121,7 @@ public class PersonService extends BaseService implements IPersonService {
     	try {
 			query = URLEncoder.encode(query, "UTF-8");
 			
-			query = baseQueryUrl + query;
+			query = baseFreebaseQueryUrl + query;
 			
 			System.out.println(query);
 			
@@ -214,28 +214,14 @@ public class PersonService extends BaseService implements IPersonService {
     	}
 		
     	if(getImagesCount > 0){
-			person.getImagePaths().addAll(getImageUrls(person, getImagesCount));
+			person.getImagePaths().addAll(getImageUrls(person));
 			
 			if(person.getImagePaths().size() > 0)
-				person.setImagePath(person.getImagePaths().get(0));
+				person.setImagePath(person.getImagePaths().get(person.getImagePaths().size()-1));
     	}
 		
 		return person;
     }
-
-	private List<String> getImageUrls(Person person, int imageCachingCount){
-		
-		String query = "PREFIX ns: <http://rdf.freebase.com/ns/> " +
-				"SELECT DISTINCT (CONCAT(CONCAT(\"https://usercontent.googleapis.com/freebase/v1/image/\", REPLACE(SUBSTR(str(?image), bif:strrchr(str(?image), '/')+2), '\\\\.', '\\\\/')), '?maxwidth=1000&maxheight=1000&mode=fit') as ?imageurl) " +
-				"FROM <http://fmb.org> " +
-				"WHERE {?actor ns:type.object.type ns:film.actor. " +
-				"?actor ns:common.topic.image ?image. " +
-				"FILTER (?actor = ns:%s)}";
-
-		query = String.format(query, "m." + person.getmID());
-		
-		return getImageUrls(query, imageCachingCount);
-	}
 	
 	public String getAvardsCountJson(String uri) throws IOException{
 		
@@ -259,7 +245,7 @@ public class PersonService extends BaseService implements IPersonService {
     	
     	query = URLEncoder.encode(query, "UTF-8");
 		
-		query = baseQueryUrl + query;
+		query = baseFreebaseQueryUrl + query;
 		
 		return getResponse(query);
 	}

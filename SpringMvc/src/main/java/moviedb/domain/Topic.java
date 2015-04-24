@@ -6,6 +6,8 @@ import java.util.List;
 public abstract class Topic {
 	
 	private String mID;
+    //TODO
+    private String pageID = "37410";
 	private String imagePath;
 	
 	private List<String> imagePaths = new ArrayList<String>();
@@ -29,4 +31,12 @@ public abstract class Topic {
     public List<String> getImagePaths() {
 		return imagePaths;
 	}
+
+    public String getPageID() {
+        return pageID;
+    }
+
+    public void setPageID(String pageID) {
+        this.pageID = pageID;
+    }
 }
