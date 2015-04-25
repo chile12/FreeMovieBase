@@ -20,54 +20,9 @@
 		<script>
 			var personID = '${person.mID}';
 			var personName = '${person.name}';
-			
-			$(function() {
-				$('#widgets > h2 > a').on('click', function (e) {
-					e.preventDefault();
-					
-					var divId = $(this).attr('id').replace('Link', '');
-					
-					var widgetDiv = document.getElementById(divId);
-				     
-					if (widgetDiv.style.display == "none"){
-						widgetDiv.style.display = "";
-						
-						var top = $('#' + divId).position().top;
-						
-						$('#personSearch').animate({ "top": "+=" + top + "px" }, "slow" );
-						
-					} else {
-						widgetDiv.style.display = "none";
-					}
-				});
-				
-				$("#personSearchInput")
-					.focusin(function() {
-						this.value = '';
-					})
-					.focusout(function() {
-						this.value = 'Search...';
-					})
-					.on('input', function() {
-					
-						var value = $(this).val();
-						
-						if(value.length > 2){
-							$.getJSON("/MovieDB/home/search", { term: value, count: 6 } )
-								.done(function(data) {
-									
-									$("#personSearchResult").empty();
-									
-									$.each(data, function(i, item) {
-										$("#personSearchResult").append('<p id="' + data[i].uri + '" class="ui-state-default">' + data[i].label + '</p>');
-									});
-									
-									$("#personSearchResult > p").draggable({ opacity: 0.7, helper: "clone" });
-								});
-						}
-				});
-			});
 		</script>
+		
+		<script src="<c:url value="/resources/js/connectionSearch.js" />" charset="utf-8"></script>
 	
 		<c:forEach items="${widgets}" var="widget">
 			<c:if test="${not empty widget.scriptPath}">
@@ -97,6 +52,7 @@
 			
 				<h2><a href="#" id="widgetLink${widget.id}">${widget.name}</a></h2>
 				<div id="widget${widget.id}" style="display:none">
+					<input type="hidden" value="${widget.acceptedType }" />
 					<c:if test="${not empty widget.jspPath}">
 					
 					<jsp:include page="${widget.jspPath}" />
@@ -111,11 +67,11 @@
 	
 	<tiles:putAttribute name="secondaryNav">
 	
-		<div id="personSearch" style="position: absolute;">
+		<div id="connectionSearch" style="position: absolute;">
 			<h2>Connect other persons</h2>
-			<input type="text" id="personSearchInput" value="Search...">
-			
-			<div id="personSearchResult"></div>
+			<input type="text" id="connectionSearchInput" value="Search...">
+			<input type="hidden" id="connectionSearchType" value="" />
+			<div id="connectionSearchResult"></div>
 		</div>
 	</tiles:putAttribute>
 </tiles:insertDefinition>

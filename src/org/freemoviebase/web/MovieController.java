@@ -114,4 +114,30 @@ public class MovieController {
 
         return new ResponseEntity<String>(actor1Json.toString(), headers, HttpStatus.OK);
 	}
+	
+	@RequestMapping(value = "/search")
+	public ResponseEntity<String> getSearch(@RequestParam(value="term", required=true) String term, @RequestParam(value="count", defaultValue="0") int count) {
+		HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
+        
+        if(count <= 0){
+        	count = 10;
+        }
+
+        JSONArray arr = new JSONArray();
+                
+        List<Movie> movies = movieService.search(term, count);
+        
+        for(Movie movie : movies){
+        	JSONObject movieJson = new JSONObject();
+        	
+        	movieJson.put("uri", movie.getmID());
+        	movieJson.put("label", movie.getTitle());
+        	movieJson.put("type", "movie");
+        	
+        	arr.put(movieJson);
+        }
+
+        return new ResponseEntity<String>(arr.toString(), headers, HttpStatus.OK);
+	}
 }

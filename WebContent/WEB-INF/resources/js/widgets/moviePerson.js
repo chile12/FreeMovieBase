@@ -7,7 +7,7 @@ $(function() {
 	
 	width = $("#widgets").width();
 	
-	var svg = d3.select("#personMovieGraph").append("svg")
+	var svg = d3.select("#moviePersonGraph").append("svg")
 		.attr("width", width)
 		.attr("height", 200)
 		.append("g")
@@ -16,7 +16,7 @@ $(function() {
 	$('#widgetLink4').on('click', function (e) {
 		e.preventDefault();
 	});
-	$("#personMovieGraph").droppable({
+	$("#moviePersonGraph").droppable({
 		accept: "#connectionSearchResult > p",
 		activeClass: "ui-state-hover",
 		hoverClass: "ui-state-active",
@@ -26,21 +26,21 @@ $(function() {
 			
 			ui.draggable.fadeOut("slow");
 			
-			drawPersonMovieGraph(personID, id);
+			drawMoviePersonGraph(movieID, id);
 		}
 	});
 
-	function drawPersonMovieGraph(actor1, actor2){
+	function drawMoviePersonGraph(movie1, movie2){
 	
-		$.getJSON("/MovieDB/movies/byActors", { actor1: actor1, actor2: actor2 })
+		$.getJSON("/MovieDB/persons/byMovies", { movie1: movie1, movie2: movie2 })
 			.done(function(data) {
 				
-				drawPersonMovieGraphByData(data);
+				drawMoviePersonGraphByData(data);
 				
 			});
 	}
 	
-	function drawPersonMovieGraphByData(data){
+	function drawMoviePersonGraphByData(data){
 		
 		var movieCount = data["children"].length,
 			height = movieCount * 65;

@@ -12,6 +12,7 @@ public class Widget {
 	private String jspPath;
 	private String cssPath;
 	private String scriptPath;
+	private String acceptedType;
 
 	public int getId() {
 		return id;
@@ -43,5 +44,13 @@ public class Widget {
 
 	public void setCssPath(String cssPath) {
 		this.cssPath = cssPath;
+	}
+
+	public String getAcceptedType() {
+		return acceptedType;
+	}
+
+	public void setAcceptedType(String acceptedType) {
+		this.acceptedType = acceptedType;
 	}
 }
