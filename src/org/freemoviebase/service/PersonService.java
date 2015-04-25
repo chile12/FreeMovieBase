@@ -7,7 +7,9 @@ package org.freemoviebase.service;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.freemoviebase.domain.Movie;
 import org.freemoviebase.domain.Person;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -219,4 +221,24 @@ public class PersonService extends BaseService implements IPersonService {
 		
 		return getResponse(query);
 	}
+	
+	public List<Person> getPersonByMovies(String uriMovie1, String uriMovie2){
+		
+		String query = "PREFIX ns: <http://rdf.freebase.com/ns/> " +
+				"SELECT DISTINCT ?actorName ?actor " +
+				"FROM <http://fmb.org> " +
+				"WHERE { " +
+				"?actor ns:type.object.type ns:film.actor. " +
+				"?actor ns:type.object.name ?actorName. " +
+				"?perf1 ns:film.performance.actor ?actor. " +
+				"?perf2 ns:film.performance.actor ?actor. " +
+				"?perf1 ns:film.performance.film ?film1. " +
+				"?perf2 ns:film.performance.film ?film2. " +
+				"FILTER (?film1 = ns:%s && ?film2 = ns:%s)}";
+		
+    	query = String.format(query, "m." + uriMovie1, "m." + uriMovie2);
+    	
+    	return getPersons(query);
+    	
+    }
 }

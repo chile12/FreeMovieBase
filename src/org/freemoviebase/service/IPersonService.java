@@ -14,4 +14,6 @@ public interface IPersonService {
     public List<Person> search(String term, int count);
     
     public String getAvardsCountJson(String uri) throws IOException;
+    
+    public List<Person> getPersonByMovies(String uriMovie1, String uriMovie2);
 }

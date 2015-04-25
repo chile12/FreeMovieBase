@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.freemoviebase.domain.Movie;
 import org.freemoviebase.domain.Person;
+import org.freemoviebase.service.IMovieService;
 import org.freemoviebase.service.IPersonService;
 import org.freemoviebase.service.IWidgetService;
 import org.json.JSONArray;
@@ -33,6 +34,9 @@ public class PersonController {
 	
 	@Autowired
 	private IPersonService personService;
+	
+	@Autowired
+	private IMovieService movieService;
 	
 	@Autowired
 	private IWidgetService widgetService;
@@ -75,65 +79,65 @@ public class PersonController {
 	}
     
 	@RequestMapping("byMovies")
-	public ResponseEntity<String> getPersons(@RequestParam(value="actor1", required=true) String uriActor1, @RequestParam(value="actor2", required=true) String uriActor2, Model model) {
+	public ResponseEntity<String> getPersons(@RequestParam(value="movie1", required=true) String uriMovie1, @RequestParam(value="movie2", required=true) String uriMovie2, Model model) {
 		
 		HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
         
-        Person actor1 = personService.getPerson(uriActor1);
+        Movie movie1 = movieService.getMovie(uriMovie1);
         
-        Person actor2 = personService.getPerson(uriActor2);
+        Movie movie2 = movieService.getMovie(uriMovie2);
         
-		//List<Movie> movies = personService.getMoviesByActors(uriActor1, uriActor2);
+		List<Person> persons = personService.getPersonByMovies(uriMovie1, uriMovie2);
 		
-		JSONObject actor1Json = new JSONObject();
+		JSONObject movie1Json = new JSONObject();
 		
-		/*actor1Json.put("id", actor1.getmID());
-		actor1Json.put("name", actor1.getName());
-		actor1Json.put("type", "actor1");
-		actor1Json.put("image", "/MovieDB" + actor1.getImagePath());
+		movie1Json.put("id", movie1.getmID());
+		movie1Json.put("name", movie1.getTitle());
+		movie1Json.put("type", "movie1");
+		movie1Json.put("image", "/MovieDB" + movie1.getImagePath());
 		
-		JSONObject actor2Json = new JSONObject();
+		JSONObject movie2Json = new JSONObject();
 		
-		actor2Json.put("id", actor2.getmID());
-		actor2Json.put("name", actor2.getName());
-		actor2Json.put("type", "actor2");
-		actor2Json.put("image", "/MovieDB" + actor2.getImagePath());
+		movie2Json.put("id", movie2.getmID());
+		movie2Json.put("name", movie2.getTitle());
+		movie2Json.put("type", "movie2");
+		movie2Json.put("image", "/MovieDB" + movie2.getImagePath());
 		
 		JSONObject dummy = new JSONObject();
 		dummy.put("type", "dummy");
 		
-		JSONArray moviesJson = new JSONArray();
+		JSONArray personsJson = new JSONArray();
 		
-		JSONArray actor2JsonArray = new JSONArray();
-		actor2JsonArray.put(actor2Json);
+		JSONArray movie2JsonArray = new JSONArray();
+		movie2JsonArray.put(movie2Json);
 		
 		JSONArray dummyJsonArray = new JSONArray();
 		dummyJsonArray.put(dummy);
 		
 		int i = 0;
 		
-		for(Movie movie : movies) {
+		for(Person person : persons) {
 			
 			JSONObject movieJson = new JSONObject();
 			
-			movieJson.put("id", movie.getmID());
-			movieJson.put("name", movie.getTitle());
-			movieJson.put("image", "/MovieDB" + movie.getImagePath());
+			movieJson.put("id", person.getmID());
+			movieJson.put("name", person.getName());
+			movieJson.put("image", "/MovieDB" + person.getImagePath());
 			
 			if(i == 0)
-				movieJson.put("children", actor2JsonArray);
+				movieJson.put("children", movie2JsonArray);
 			else
 				movieJson.put("children", dummyJsonArray);
 			
-			moviesJson.put(movieJson);
+			personsJson.put(movieJson);
 			
 			i++;
 		}
 		
-		actor1Json.put("children", moviesJson);*/
+		movie1Json.put("children", personsJson);
 
-        return new ResponseEntity<String>(actor1Json.toString(), headers, HttpStatus.OK);
+        return new ResponseEntity<String>(movie1Json.toString(), headers, HttpStatus.OK);
 	}
     
     @RequestMapping(value = "/search")

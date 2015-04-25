@@ -55,8 +55,8 @@ $(function() {
 
 		var nodes = tree.nodes(data).reverse();
 
-		var actor1Node = nodes.filter(function(d) { return d['type'] === 'actor1'; })[0];
-		var actor2Node = nodes.filter(function(d) { return d['type'] === 'actor2'; })[0];
+		var actor1Node = nodes.filter(function(d) { return d['type'] === 'movie1'; })[0];
+		var actor2Node = nodes.filter(function(d) { return d['type'] === 'movie2'; })[0];
 
 		var dummyNodes = nodes.filter(function(d) { return d['type'] === 'dummy'; });
 
