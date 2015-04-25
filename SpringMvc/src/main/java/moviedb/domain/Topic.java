@@ -1,16 +1,20 @@
 package moviedb.domain;
 
+import moviedb.service.BaseService;
+
+import javax.jnlp.BasicService;
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class Topic {
-	
 	private String mID;
-    //TODO
-    private String pageID = "37410";
-	private String imagePath;
-	
+    private String title;
+    private String description;
+    private String webSite;
+    private String wikiID;
+	private boolean queriedForImages = false;
 	private List<String> imagePaths = new ArrayList<String>();
+
 	
 	public String getmID() {
 		return mID;
@@ -21,22 +25,49 @@ public abstract class Topic {
 	}
 	
 	public String getImagePath() {
-        return imagePath;
-    }
-
-    public void setImagePath(String imagePath) {
-        this.imagePath = imagePath;
+        if(getImagePaths().size() > 0)
+            return getImagePaths().get(0);
+        return "";
     }
     
     public List<String> getImagePaths() {
-		return imagePaths;
+		if(queriedForImages || this.getmID() == null)
+            return imagePaths;
+
+        imagePaths = BaseService.getImageUrls(this);
+        queriedForImages = true;
+        return imagePaths;
 	}
 
-    public String getPageID() {
-        return pageID;
+    public String getWikiID() {
+        return wikiID;
     }
 
-    public void setPageID(String pageID) {
-        this.pageID = pageID;
+    public void setWikiID(String wikiID) {
+        this.wikiID = wikiID;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getWebSite() {
+        return webSite;
+    }
+
+    public void setWebSite(String webSite) {
+        this.webSite = webSite;
     }
 }

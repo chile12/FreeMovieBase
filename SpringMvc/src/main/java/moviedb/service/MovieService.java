@@ -1,60 +1,33 @@
 package moviedb.service;
 
+import moviedb.domain.Topic;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import moviedb.domain.Movie;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class MovieService  extends BaseService implements IMovieService {
-	
-    public Movie getMovie(String uri){
-    	
-    	Movie movie = null;
-    	
-    	try {
-    		String query = "PREFIX ns: <http://rdf.freebase.com/ns/> " +
-    				"SELECT DISTINCT ?filmTitle ?film ?releaseDate " +
-    				"FROM <http://fmb.org> " +
-    				"WHERE { " +
-    				"?film ns:type.object.type ns:film.film. " +
-    				"?film ns:type.object.name ?filmTitle. " +
-    				"?x ns:film.film_regional_release_date.release_date ?releaseDate. " +
-    				"?x ns:film.film_regional_release_date.film_release_region ?region. " +
-    				"FILTER(?film = ns:%s && ?region = ns:m.0345h)}";
-        	query = String.format(query, "m." + uri);
 
-    		JSONArray arr = getJSONArray(query);
-    		
-    		JSONObject movieJson = arr.getJSONObject(0);
-    		
-    		movie = createMovie(movieJson, true, true);
-    		
-    	} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	
-    	return movie;
+    private Map<String, Movie> movieCache = new HashMap<String, Movie>();
+    public Movie getMovie(String mid){
+    	List<Movie> movs = getMovies(Arrays.asList(mid));
+        if(movs.size() > 0)
+    	    return movs.get(0);
+        return null;
     }
     
     public List<Movie> getMoviesByAward(String uri, int year){
-    	
+
+        List<Movie> movies = new ArrayList<Movie>();
 		String query = "PREFIX ns: <http://rdf.freebase.com/ns/> " +
-				"SELECT DISTINCT ?filmTitle ?film " +
+				"SELECT DISTINCT ?film " +
 				"FROM <http://fmb.org> " +
 				"WHERE { " +
 				"?film ns:type.object.type ns:film.film. " +
-				"?film ns:type.object.name ?filmTitle. " +
 				"?film ns:common.topic.image ?image. " + 
 				"?film ns:award.award_winning_work.awards_won ?awardHonor. " +
 				"?awardHonor ns:award.award_honor.year ?year. " +
@@ -66,12 +39,25 @@ public class MovieService  extends BaseService implements IMovieService {
 				"ORDER BY DESC(?year) " +
 				"LIMIT 100";
     	query = String.format(query, "m." + uri, year);
-    	
-    	return getMovies(query);
+        try {
+
+            List<String> mids = new ArrayList<String>();
+            JSONArray arr = getJSONArray(query);
+            for(int i = 0 ; i < arr.length(); i++){
+                JSONObject json = arr.getJSONObject(i);
+                String mID = json.getJSONObject("film").getString("value");
+                mids.add(mID.replace("http://rdf.freebase.com/ns/", ""));
+            }
+            movies.addAll(getMovies(mids));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return movies;
     }
     
     public List<Movie> search(String term, int count){
-    	
+
+        List<Movie> movies = new ArrayList<Movie>();
     	String query = "PREFIX ns: <http://rdf.freebase.com/ns/> " +
     			"SELECT DISTINCT ?filmTitle ?film " +
 				"FROM <http://fmb.org> " +
@@ -83,14 +69,46 @@ public class MovieService  extends BaseService implements IMovieService {
 				"LIMIT " + count;
     	
     	query = String.format(query, term);
-    	
-    	return getMovies(query);
+        try {
+
+            List<String> mids = new ArrayList<String>();
+            JSONArray arr = getJSONArray(query);
+            for(int i = 0 ; i < arr.length(); i++){
+                JSONObject json = arr.getJSONObject(i);
+                String mID = json.getJSONObject("film").getString("value");
+                mids.add(mID.replace("http://rdf.freebase.com/ns/", ""));
+            }
+            movies.addAll(getMovies(mids));
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+
+        }
+    	return movies;
     }
     
-    private List<Movie> getMovies(String query){
-    	
+    private List<Movie> getMovies(List<String> mids){
     	List<Movie> movies = new ArrayList<Movie>();
-    	
+        //extracts basic Informations about the movie
+        String query = "PREFIX ns: <http://rdf.freebase.com/ns/> \n" +
+                "PREFIX key: <http://rdf.freebase.com/key/> \n" +
+                "                SELECT DISTINCT ?film ?wikiId ?filmTitle (group_concat(distinct ?website;separator=\",&\") as ?websites) (group_concat(distinct ?country;separator=\",&\") as ?countries) ?series ?tagline (group_concat(distinct ?description;separator=\",&\") as ?descriptions) \n" +
+                "FROM <http://fmb.org>\n" +
+                "                WHERE { \n" +
+                "                OPTIONAL{?film ns:type.object.name ?filmTitle. }\n" +
+                "                OPTIONAL{?film key:wikipedia.en_id ?wikiId. }\n" +
+                "                OPTIONAL{?film ns:common.topic.official_website ?website.}\n" +
+                "                OPTIONAL{?film ns:film.film.tagline ?tagline.  }\n" +
+                "                OPTIONAL{?film ns:common.topic.description ?description.  }\n" +
+                "                OPTIONAL{?film ns:film.film.country / ns:type.object.name ?country.  }\n" +
+                "                OPTIONAL{?film ns:film.film.film_series / ns:type.object.name ?series.  }\n" +
+                "FILTER ( ?film in ( ";
+        for(String mid : mids)
+        {
+            query += "ns:" + mid + ",";
+        }
+        query = query.substring(0, query.length()-1) + "))} GROUP BY ?websites ?countries ?filmTitle ?wikiId ?film ?series ?tagline ?descriptions";
+
     	try {
 	    	JSONArray arr = getJSONArray(query);
 	    	
@@ -98,7 +116,7 @@ public class MovieService  extends BaseService implements IMovieService {
 				
 				JSONObject movieJson = arr.getJSONObject(i);
 				
-				Movie movie = createMovie(movieJson, 1, false);
+				Movie movie = createMovie(movieJson);
 				
 				movies.add(movie);
 			}
@@ -114,82 +132,111 @@ public class MovieService  extends BaseService implements IMovieService {
 		return movies;
     }
     
-    private Movie createMovie(JSONObject actorJson, boolean getImages, boolean getCountries){
-    	return createMovie(actorJson, getImages ? Integer.MAX_VALUE : 0, getCountries);
-    }
-    
-    private Movie createMovie(JSONObject filmJson, int getImagesCount, boolean getCountries){
+    private Movie createMovie(JSONObject json){
+    	String mID = json.getJSONObject("film").getString("value");
+		mID = mID.replace("http://rdf.freebase.com/ns/", "");
+
+        if(movieCache.keySet().contains(mID))
+            return movieCache.get(mID);
+
+        Movie movie = new Movie();
+        movie.setmID(mID);
     	
-    	Movie movie = new Movie();
-		
-    	String mID = filmJson.getJSONObject("film").getString("value");
-		mID = mID.replace("http://rdf.freebase.com/ns/m.", "");
-		movie.setmID(mID);
-    	
-    	if(filmJson.has("filmTitle")){
-    		movie.setTitle(filmJson.getJSONObject("filmTitle").getString("value"));
-    	}
-    	
-    	if(filmJson.has("releaseDate")){
-    		
-    		try {
-    			DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-    			
-    			String releaseString = filmJson.getJSONObject("releaseDate").getString("value");
-    			
-    			movie.setReleaseDateGermany(formatter.parse(releaseString));
-				
-			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-    	}
-    	
-    	if(getImagesCount > 0){
-    		movie.getImagePaths().addAll(getImageUrls(movie));
-			
-			if(movie.getImagePaths().size() > 0)
-				movie.setImagePath(movie.getImagePaths().get(0));
-    	}
-		
-    	
-    	movie.getCountries().
-                addAll(getCountries(movie));
-    	
+    	if(json.has("filmTitle")) movie.setTitle(json.getJSONObject("filmTitle").getString("value"));
+        if(json.has("websites"))
+        {
+            String zw = json.getJSONObject("websites").getString("value");
+            if(zw.contains(",&"))
+                zw = zw.substring(0, zw.indexOf(",&"));
+            movie.setWebSite(zw);
+        }
+        if(json.has("description"))
+        {
+            String zw = json.getJSONObject("description").getString("value");
+            String[] descs = zw.split(",\\&");
+            zw = "";
+            for(String st : descs)
+                if(zw.length() < st.length())
+                    zw = st;
+            movie.setWebSite(zw);
+        }
+        if(json.has("wikiId")) movie.setWikiID(json.getJSONObject("wikiId").getString("value"));
+        if(json.has("series")) movie.setSeries(json.getJSONObject("series").getString("value"));
+        if(json.has("tagline")) movie.setTagline(json.getJSONObject("tagline").getString("value"));
+
+        if(json.has("countries")){
+            movie.getCountries().clear();
+            for(String c : json.getJSONObject("countries").getString("value").split(",\\&"))
+            {
+                movie.getCountries().add(c);
+            }
+        }
+        addMovieToCache(movie);
 		return movie;
     }
-    
-    private List<String> getCountries(Movie movie){
-    	
-    	String query = "PREFIX ns: <http://rdf.freebase.com/ns/> " +
-    					"SELECT DISTINCT ?countryTitle " +
-						"FROM <http://fmb.org> " +
-    					"WHERE { " +
-						"?film ns:type.object.type ns:film.film. " +
-    					"?film ns:film.film.country ?country. " +
-						"?country ns:type.object.name ?countryTitle. " +
-						"FILTER (?film = ns:%s)}";
 
-		query = String.format(query, "m." + movie.getmID());
-		
-		List<String> countries = new ArrayList<String>();
-		
-		try {
-			JSONArray arr = getJSONArray(query);
-	    	
-			for(int i = 0 ; i < arr.length(); i++){
-				
-				JSONObject countryJson = arr.getJSONObject(i);
-				
-				countries.add(countryJson.getJSONObject("countryTitle").getString("value"));
-			}
-			
-			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		return countries;
+    public Movie additionalInformations(Movie movie)
+    {
+        //extracts additional Informations about the movie
+        String query = "PREFIX ns: <http://rdf.freebase.com/ns/> \n" +
+                "PREFIX key: <http://rdf.freebase.com/key/> \n" +
+                "SELECT DISTINCT (group_concat(distinct ?comp;separator=\",&\") as ?companies) (group_concat(distinct ?genre;separator=\",&\") as ?genres) (MIN(?run) as ?runtime) ?revenue ?budget (MIN(?rel) as ?release) ?starr ?actor ?character\n" +
+                "FROM <http://fmb.org>\n" +
+                "WHERE { ?film ns:film.film.starring ?starr.\n" +
+                "                ?starr ns:film.performance.actor ?actor.\n" +
+                "                OPTIONAL{?starr ns:film.performance.character / ns:type.object.name ?character.}\n" +
+                "                OPTIONAL{?film ns:film.film.production_companies / ns:type.object.name ?comp. }\n" +
+                "                OPTIONAL{?film ns:film.film.genre / ns:type.object.name ?genre.  }\n" +
+                "                OPTIONAL{?film ns:film.film.runtime / ns:film.film_cut.runtime ?run. }\n" +
+                "                OPTIONAL{?film ns:film.film.gross_revenue / ns:measurement_unit.dated_money_value.amount ?revenue. }\n" +
+                "                OPTIONAL{?film ns:film.film.estimated_budget / ns:measurement_unit.dated_money_value.amount ?budget. }\n" +
+                "                OPTIONAL{?film ns:film.film.release_date_s / ns:film.film_regional_release_date.release_date ?rel. }\n" +
+                "FILTER ( ?film  = ns:%s)} \n" +
+                "GROUP BY ?companies ?genres ?runtime ?revenue ?budget ?release ?actor ?character ?starr";
+        query = String.format(query, movie.getmID());
+
+        try {
+            JSONArray arr = getJSONArray(query);
+
+            for(int i =0; i < arr.length(); i++)
+            {
+                JSONObject filmJson = arr.getJSONObject(i);
+                if( i == 0) {
+                    if (filmJson.has("runtime")) movie.setRuntime(filmJson.getJSONObject("runtime").getDouble("value"));
+                    if (filmJson.has("revenue")) movie.setRevenue(filmJson.getJSONObject("revenue").getDouble("value"));
+                    if (filmJson.has("budget")) movie.setBudget(filmJson.getJSONObject("budget").getDouble("value"));
+                    if (filmJson.has("release"))
+                        movie.setReleaseDate(formatter.parse(filmJson.getJSONObject("release").getString("value")));
+
+                    if (filmJson.has("companies")) {
+                        movie.getCountries().clear();
+                        for (String c : filmJson.getJSONObject("companies").getString("value").split(",\\&")) {
+                            movie.getCompanies().add(c);
+                        }
+                    }
+                    if (filmJson.has("genres")) {
+                        movie.getCountries().clear();
+                        for (String c : filmJson.getJSONObject("genres").getString("value").split(",\\&")) {
+                            movie.getGenres().add(c);
+                        }
+                    }
+                }
+                movie.getActors().put(filmJson.getJSONObject("actor").getString("value"), filmJson.getJSONObject("character").getString("value"));
+            }
+
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return movie;
+    }
+
+    private void addMovieToCache(Movie mov)
+    {
+        if(!movieCache.keySet().contains(mov.getmID()))  //not!!
+            movieCache.put(mov.getmID(), mov);
     }
 }

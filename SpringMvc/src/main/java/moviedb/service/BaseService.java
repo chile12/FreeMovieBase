@@ -18,6 +18,8 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,29 +30,30 @@ import java.util.List;
  */
 public abstract class BaseService implements ServletContextAware {
 
-	private ServletContext servletContext;
-	
-	protected String baseFreebaseQueryUrl = "http://vmdbpedia.informatik.uni-leipzig.de:8890/sparql?format=json&query=";
-    protected String baseWikipediaQueryUrl = "http://dbpedia.org/sparql/default-graph-uri=http%3A%2F%2Fdbpedia.org?format=json&query=";
-	protected String relativeEntitiesPath = "/resources/images/";
-	
-	protected List<String> getImageUrls(Topic top){
+    static DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+	private static ServletContext servletContext;
+    private static String baseFreebaseQueryUrl = "http://vmdbpedia.informatik.uni-leipzig.de:8890/sparql?format=json&query=";
+    private static String baseWikipediaQueryUrl = "http://dbpedia.org/sparql/default-graph-uri=http%3A%2F%2Fdbpedia.org?format=json&query=";
+    private static String relativeEntitiesPath = "/resources/images/";
+
+	public static List<String> getImageUrls(Topic top){
 		
 		List<String> urls = new ArrayList<String>();
+        urls.addAll(getFreebaseImgUrl(top.getmID()));
         try {
-            urls.add(getWikipediaImg(top.getPageID()));
+            urls.add(getWikipediaImg(top.getWikiID()));
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        urls.addAll(getFreebaseImgUrl(top.getmID()));
         urls.removeAll(Collections.singleton(null));
 		return urls;
 	}
 
-    private List<String> getFreebaseImgUrl(String id)
+    private static  List<String> getFreebaseImgUrl(String id)
     {
+        List<String> urls = new ArrayList<String>();
         try{
             String query = "PREFIX ns: <http://rdf.freebase.com/ns/> " +
                     "SELECT DISTINCT (CONCAT(CONCAT(\"https://usercontent.googleapis.com/freebase/v1/image/\", REPLACE(SUBSTR(str(?image), bif:strrchr(str(?image), '/')+2), '\\\\.', '\\\\/')), '?maxwidth=333&maxheight=333&mode=fit') as ?imageurl) " +
@@ -58,7 +61,7 @@ public abstract class BaseService implements ServletContextAware {
                     "WHERE {?film ns:common.topic.image ?image. " +
                     "FILTER (?film = ns:%s)}";
 
-            query = String.format(query, "m." + id);
+            query = String.format(query, id);
             query = baseFreebaseQueryUrl + URLEncoder.encode(query, "UTF-8");
 
             String resultString = getResponse(query);
@@ -66,23 +69,20 @@ public abstract class BaseService implements ServletContextAware {
             JSONObject result = new JSONObject(resultString);
             JSONArray arr = result.getJSONObject("results").getJSONArray("bindings");
 
-            if(arr.length() == 0)
-                return null;
-
-            List<String> urls = new ArrayList<String>();
             for(int i =0; i < arr.length(); i++) {
                 String url = arr.getJSONObject(0).getJSONObject("imageurl").getString("value");
                 urls.add(cacheImage(url));
             }
-            return urls;
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        return null;
+        return urls;
     }
 
-    private String getWikipediaImg(String pageId) throws UnsupportedEncodingException, JSONException {
+    private static String getWikipediaImg(String pageId) throws UnsupportedEncodingException, JSONException {
+        if(pageId == null)
+            return null;
             String query = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
                     "PREFIX dbpedia: <http://dbpedia.org/ontology/>\n" +
                     "Select ?page ?imgurl\n" +
@@ -118,12 +118,15 @@ public abstract class BaseService implements ServletContextAware {
             if (arr == null || arr.length() == 0)
                 return null;
 
+        if(arr.getJSONObject(0).has("imgurl")) {
             String url = arr.getJSONObject(0).getJSONObject("imgurl").getString("value");
             url = cacheImage(url);
             return url;
+        }
+        return null;
     }
 	
-	private String cacheImage(String url){
+	private static String cacheImage(String url){
 		
 		String imageID = null;
         if(url.contains("/image/m"))
@@ -166,7 +169,7 @@ public abstract class BaseService implements ServletContextAware {
     	return arr;
 	}
 	
-    protected String getResponse(String targetUrl) throws IOException{
+    protected static String getResponse(String targetUrl) throws IOException{
     	URL url;
     	HttpURLConnection connection = null;
     	
@@ -202,7 +205,7 @@ public abstract class BaseService implements ServletContextAware {
         return result;
     }
     
-    private String getEnitiesPath(){
+    private static  String getEnitiesPath(){
     	return servletContext.getRealPath(relativeEntitiesPath);
     }
     

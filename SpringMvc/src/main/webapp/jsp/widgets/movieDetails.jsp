@@ -9,7 +9,7 @@
 		</tr>
 		<tr>
 			<td>Erscheinungsjahr</td>
-			<td><fmt:formatDate value="${movie.releaseDateGermany}" pattern="dd.MM.yyyy" /> (Deutschland)</td>
+			<td><fmt:formatDate value="${movie.releaseDate}" pattern="dd.MM.yyyy" /> (Deutschland)</td>
 		</tr>
 		<tr>
 			<td>Countries</td>
