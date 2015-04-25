@@ -2,7 +2,6 @@ package moviedb.domain;
 
 import moviedb.service.BaseService;
 
-import javax.jnlp.BasicService;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,17 +24,21 @@ public abstract class Topic {
 	}
 	
 	public String getImagePath() {
-        if(getImagePaths().size() > 0)
-            return getImagePaths().get(0);
-        return "";
+        if(getImagePaths(false).size() > 0)
+            return getImagePaths(false).get(0);
+        //TODO default
+        return "/resources/images/gallery.gif";
+    }
+
+    public List<String> getImagePaths() {
+        return getImagePaths(true);
     }
     
-    public List<String> getImagePaths() {
+    private List<String> getImagePaths(boolean all) {
 		if(queriedForImages || this.getmID() == null)
             return imagePaths;
 
-        imagePaths = BaseService.getImageUrls(this);
-        queriedForImages = true;
+        imagePaths = BaseService.getImageUrls(this, all);
         return imagePaths;
 	}
 
@@ -69,5 +72,13 @@ public abstract class Topic {
 
     public void setWebSite(String webSite) {
         this.webSite = webSite;
+    }
+
+    public boolean isQueriedForImages() {
+        return queriedForImages;
+    }
+
+    public void setQueriedForImages(boolean queriedForImages) {
+        this.queriedForImages = queriedForImages;
     }
 }

@@ -24,7 +24,7 @@ public class MovieService  extends BaseService implements IMovieService {
 
         List<Movie> movies = new ArrayList<Movie>();
 		String query = "PREFIX ns: <http://rdf.freebase.com/ns/> " +
-				"SELECT DISTINCT ?film " +
+				"SELECT DISTINCT (?film as ?mid) " +
 				"FROM <http://fmb.org> " +
 				"WHERE { " +
 				"?film ns:type.object.type ns:film.film. " +
@@ -38,53 +38,42 @@ public class MovieService  extends BaseService implements IMovieService {
 				"GROUP BY ?film ?filmTitle ?year " +
 				"ORDER BY DESC(?year) " +
 				"LIMIT 100";
-    	query = String.format(query, "m." + uri, year);
-        try {
-
-            List<String> mids = new ArrayList<String>();
-            JSONArray arr = getJSONArray(query);
-            for(int i = 0 ; i < arr.length(); i++){
-                JSONObject json = arr.getJSONObject(i);
-                String mID = json.getJSONObject("film").getString("value");
-                mids.add(mID.replace("http://rdf.freebase.com/ns/", ""));
-            }
-            movies.addAll(getMovies(mids));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return movies;
+    	query = String.format(query, uri, year);
+        return getMovies(evalQueryResult(query));
     }
     
     public List<Movie> search(String term, int count){
 
         List<Movie> movies = new ArrayList<Movie>();
     	String query = "PREFIX ns: <http://rdf.freebase.com/ns/> " +
-    			"SELECT DISTINCT ?filmTitle ?film " +
+    			"SELECT DISTINCT (?film as ?mid) " +
 				"FROM <http://fmb.org> " +
 				"WHERE { " +
 				"?film ns:type.object.type ns:film.film. " +
-				"?film ns:type.object.name ?filmTitle. " +
 				"FILTER (REGEX(STR(?filmTitle), \"%s\", \"i\"))}" +
 				"ORDER BY (?filmTitle) " +
 				"LIMIT " + count;
     	
     	query = String.format(query, term);
-        try {
+        return getMovies(evalQueryResult(query));
+    }
 
-            List<String> mids = new ArrayList<String>();
-            JSONArray arr = getJSONArray(query);
-            for(int i = 0 ; i < arr.length(); i++){
-                JSONObject json = arr.getJSONObject(i);
-                String mID = json.getJSONObject("film").getString("value");
-                mids.add(mID.replace("http://rdf.freebase.com/ns/", ""));
-            }
-            movies.addAll(getMovies(mids));
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
+    public List<Movie> getMoviesByActors(String uriActor1, String uriActor2){
+        String query = "PREFIX ns: <http://rdf.freebase.com/ns/> " +
+                "SELECT DISTINCT (?film as ?mid) " +
+                "FROM <http://fmb.org> "+
+                "WHERE { "+
+                "?film ns:type.object.type ns:film.film. " +
+                "?film ns:film.film.starring ?perf1. " +
+                "?film ns:film.film.starring ?perf2. " +
+                "?perf1 ns:film.performance.actor ?actor1. " +
+                "?perf2 ns:film.performance.actor ?actor2. " +
+                "FILTER (?actor1 = ns:%s && ?actor2 = ns:%s)}";
 
-        }
-    	return movies;
+        query = String.format(query, uriActor1, uriActor2);
+
+        return getMovies(evalQueryResult(query));
+
     }
     
     private List<Movie> getMovies(List<String> mids){

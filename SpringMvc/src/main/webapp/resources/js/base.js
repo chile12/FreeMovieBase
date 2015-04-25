@@ -4,7 +4,7 @@ $(function() {
 			this.value = '';
 		})
 		.focusout(function() {
-			this.value = '';
+			this.value = 'Suche...';
 		})
 		// don't navigate away from the field on tab when selecting an item
 		.bind("keydown", function(event) {
@@ -15,7 +15,7 @@ $(function() {
 		})
 		.autocomplete({
 			source: function(request, response) {
-				$.getJSON("home/search", {
+				$.getJSON("/home/search", {
 					term: request.term
 				}, response);
 			},

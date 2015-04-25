@@ -13,24 +13,10 @@
 
 		<script>
 			var movieID = '${movie.mID}';
-			
-			$(function() {
-				$('#widgets > h2 > a').on('click', function (e) {
-					e.preventDefault();
-					
-					var divId = $(this).attr('id').replace('Link', '');
-					
-					var widgetDiv = document.getElementById(divId);
-				     
-					if (widgetDiv.style.display == "none"){
-						widgetDiv.style.display = "";
-					} else {
-						widgetDiv.style.display = "none";
-					}
-				});
-			});
 		</script>
-	
+		
+		<script src="<c:url value="/resources/js/connectionSearch.js" />" charset="utf-8"></script>
+		
 		<c:forEach items="${widgets}" var="widget">
 			<c:if test="${not empty widget.scriptPath}">
 			<script src="<c:url value="${widget.scriptPath}" />" charset="utf-8"></script>
@@ -71,9 +57,12 @@
 	</tiles:putAttribute>
 	
 	<tiles:putAttribute name="secondaryNav">
-		<h2>Secondary Navigation</h2>
-		<ul>
-			<li>TEST</li>
-		</ul>
+	
+		<div id="connectionSearch" style="position: absolute;">
+			<h2>Connect other persons</h2>
+			<input type="text" id="connectionSearchInput" value="Search...">
+			<input type="hidden" id="connectionSearchType" value="" />
+			<div id="connectionSearchResult"></div>
+		</div>
 	</tiles:putAttribute>
 </tiles:insertDefinition>

@@ -17,7 +17,7 @@
   		<c:set var="i" value="0"/>
 		<c:forEach items="${persons}" var="person">
 	 	<li class="one_quarter ${i % 4 == 0 ? " first" : ""}">
-	 		<a href="/persons/get?uri=${person.mID}">${person.name}</a><br />
+	 		<a href="<c:url value="/persons/get?uri=${person.mID}" />">${person.name}</a><br />
  			<img class="imgl borderedbox inspace-5" style="height:80px" src="<c:url value="${person.imagePath}"/>" alt="" />
  			<c:set var="i" value="${i + 1}"/>
 		</li>

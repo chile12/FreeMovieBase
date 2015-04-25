@@ -30,44 +30,28 @@ public class PersonService extends BaseService implements IPersonService {
         return null;
     }
     
-    public List<Person> getPersonsByAward(String uri, int year){
+    public List<Person> getPersonsByAward(String mid, int year){
     	
 		String query = "PREFIX ns: <http://rdf.freebase.com/ns/> " +
-				"SELECT DISTINCT ?actor " +
-				"FROM <http://fmb.org> " +
-				"WHERE { " +
-				"?actor ns:type.object.type ns:film.actor. " +
-				"?actor ns:type.object.name ?actorName. " +
-				"?actor ns:common.topic.image ?image. " + 
-				"?actor ns:award.award_winner.awards_won ?awardHonor. " +
-				"?awardHonor ns:award.award_honor.year ?year. " +
-				"?awardHonor ns:award.award_honor.award ?awardCategory. " + 
-				"?awardCategory ns:award.award_category.category_of ?award. " +
-				"?award ns:type.object.name ?awardName. " +
-				"FILTER(?award = ns:%s  && YEAR(?year) >= %s)} " +
-				"GROUP BY ?actor ?actorName ?year " +
-				"ORDER BY DESC(?year) " +
-				"LIMIT 100";
-    	query = String.format(query, uri, year);
-        try {
-            List<String> mids = new ArrayList<String>();
-            JSONArray arr = getJSONArray(query);
-            for(int i = 0 ; i < arr.length(); i++){
-                JSONObject json = arr.getJSONObject(i);
-                String mID = json.getJSONObject("actor").getString("value");
-                mids.add(mID.replace("http://rdf.freebase.com/ns/", ""));
-            }
-            return getPersons(mids);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    	return new ArrayList<Person>();
+				"PREFIX ns: <http://rdf.freebase.com/ns/> \n" +
+                "SELECT DISTINCT (?actor as ?mid) \n" +
+                "FROM <http://fmb.org> \n" +
+                "WHERE { ?actor ns:type.object.type ns:film.actor. \n" +
+                "?actor ns:award.award_winner.awards_won ?awardHonor. \n" +
+                "?awardHonor ns:award.award_honor.year ?year. \n" +
+                "?awardHonor ns:award.award_honor.award ?awardCategory. \n" +
+                "?awardCategory ns:award.award_category.category_of ?award. \n" +
+                "?award ns:type.object.name ?awardName.\n" +
+                "FILTER(?award = ns:%s  && YEAR(?year) = %d)} \n" +
+                "GROUP BY ?actor ?actorName ?year ORDER BY DESC(?year) ";
+    	query = String.format(query, mid, year);
+    	return getPersons(evalQueryResult(query));
     }
     
     public List<Person> search(String term, int count){
     	
     	String query = "PREFIX ns: <http://rdf.freebase.com/ns/> " +
-				"SELECT DISTINCT ?actor " +
+				"SELECT DISTINCT (?actor as ?mid) " +
 				"FROM <http://fmb.org> " +
 				"WHERE { " +
 				"?actor ns:type.object.type ns:film.actor. " +
@@ -76,19 +60,7 @@ public class PersonService extends BaseService implements IPersonService {
 				"ORDER BY (?actorName) " +
 				"LIMIT " + count;
     	query = String.format(query, term);
-        try {
-            List<String> mids = new ArrayList<String>();
-            JSONArray arr = getJSONArray(query);
-            for(int i = 0 ; i < arr.length(); i++){
-                JSONObject json = arr.getJSONObject(i);
-                String mID = json.getJSONObject("actor").getString("value");
-                mids.add(mID.replace("http://rdf.freebase.com/ns/", ""));
-            }
-            return getPersons(mids);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    	return new ArrayList<Person>();
+        return getPersons(evalQueryResult(query));
     }
     
     private List<Person> getPersons(List<String> mids){
@@ -108,7 +80,7 @@ public class PersonService extends BaseService implements IPersonService {
                 "                OPTIONAL{?p ns:common.topic.description ?description.  }\n" +
                 "                OPTIONAL{?p ns:people.person.nationality / ns:type.object.name ?country .  }\n" +
                 "                OPTIONAL{?p ns:people.person.gender / ns:type.object.name ?gender.  }\n" +
-                "                FILTER ( ?p in (";
+                "                FILTER ( ?p in ( ";
         for(String mid : mids)
         {
             query += "ns:" + mid + ",";
@@ -201,13 +173,10 @@ public class PersonService extends BaseService implements IPersonService {
 				"GROUP BY ?year " +
 				"ORDER BY DESC(?year) " +
 				"LIMIT 100";
-    	query = String.format(query, "m." + uri);
+    	query = String.format(query, uri);
     	
     	query = URLEncoder.encode(query, "UTF-8");
-		
-		query = query;
-		
-		return getResponse(query);
+		return getResponse(BaseService.baseFreebaseQueryUrl + query);
 	}
 
     public Person additionalInformations(Person movie)
@@ -294,6 +263,24 @@ public class PersonService extends BaseService implements IPersonService {
             e.printStackTrace();
         }
         return movie;
+    }
+
+    public List<Person> getPersonByMovies(String uriMovie1, String uriMovie2){
+
+        String query = "PREFIX ns: <http://rdf.freebase.com/ns/> " +
+                "SELECT DISTINCT (?actor as ?mid) " +
+                "FROM <http://fmb.org> " +
+                "WHERE { " +
+                "?actor ns:type.object.type ns:film.actor. " +
+                "?perf1 ns:film.performance.actor ?actor. " +
+                "?perf2 ns:film.performance.actor ?actor. " +
+                "?perf1 ns:film.performance.film ?film1. " +
+                "?perf2 ns:film.performance.film ?film2. " +
+                "FILTER (?film1 = ns:%s && ?film2 = ns:%s)}";
+
+
+        return getPersons(evalQueryResult(query));
+
     }
 
     private void addPersonToCache(Person mov)

@@ -16,11 +16,12 @@ import java.util.List;
 public class Person extends Topic {
 
     public enum Profession{
-        Actor,
-        Director,
-        Writer,
-        Producer,
-        MusicCon
+        actor,
+        director,
+        writer,
+        producer,
+        musiccontributor,
+        film_subject
     }
 
     public enum Sex{
@@ -31,9 +32,7 @@ public class Person extends Topic {
 	public Person() {
 		
 	}
-	
-	private String name;
-    private String description;
+
     private Date birthday;
     private Date deathday;
     private Sex gender;
@@ -53,11 +52,11 @@ public class Person extends Topic {
     private List<String> languages =  new ArrayList<String>();
     
 	public String getName() {
-		return name;
+		return this.getTitle();
 	}
 
 	public void setName(String name) {
-		this.name = name;
+		this.setTitle(name);
 	}
 
     public Date getBirthday() {
@@ -66,14 +65,6 @@ public class Person extends Topic {
 
     public void setBirthday(Date birthday) {
         this.birthday = birthday;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
 	public Sex getGender() {

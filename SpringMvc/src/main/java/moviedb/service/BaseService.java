@@ -32,22 +32,28 @@ public abstract class BaseService implements ServletContextAware {
 
     static DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 	private static ServletContext servletContext;
-    private static String baseFreebaseQueryUrl = "http://vmdbpedia.informatik.uni-leipzig.de:8890/sparql?format=json&query=";
-    private static String baseWikipediaQueryUrl = "http://dbpedia.org/sparql/default-graph-uri=http%3A%2F%2Fdbpedia.org?format=json&query=";
+    static String baseFreebaseQueryUrl = "http://vmdbpedia.informatik.uni-leipzig.de:8890/sparql?format=json&query=";
+    static String baseWikipediaQueryUrl = "http://dbpedia.org/sparql/default-graph-uri=http%3A%2F%2Fdbpedia.org?format=json&query=";
     private static String relativeEntitiesPath = "/resources/images/";
 
-	public static List<String> getImageUrls(Topic top){
+	public static List<String> getImageUrls(Topic top, boolean all){
 		
 		List<String> urls = new ArrayList<String>();
         urls.addAll(getFreebaseImgUrl(top.getmID()));
-        try {
-            urls.add(getWikipediaImg(top.getWikiID()));
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
         urls.removeAll(Collections.singleton(null));
+        if(all || urls.size() == 0) {
+            try {
+                urls.add(getWikipediaImg(top.getWikiID()));
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            urls.removeAll(Collections.singleton(null));
+
+            if(all)
+                top.setQueriedForImages(true);
+        }
 		return urls;
 	}
 
@@ -74,8 +80,6 @@ public abstract class BaseService implements ServletContextAware {
                 urls.add(cacheImage(url));
             }
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
         return urls;
     }
@@ -138,7 +142,6 @@ public abstract class BaseService implements ServletContextAware {
     	if(!image.exists()){
 	    	try {
 				URL imageUrl = new URL(url);
-                image.createNewFile();
 				ReadableByteChannel rbc = Channels.newChannel(imageUrl.openStream());
 				FileOutputStream fos = new FileOutputStream(image);
 				long byteCount = fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
@@ -154,6 +157,22 @@ public abstract class BaseService implements ServletContextAware {
     	
     	return relativeEntitiesPath + imageID;
 	}
+
+    List<String> evalQueryResult(String query)
+    {
+        List<String> mids = new ArrayList<String>();
+        try {
+            JSONArray arr = getJSONArray(query);
+            for(int i = 0 ; i < arr.length(); i++){
+                JSONObject json = arr.getJSONObject(i);
+                String mID = json.getJSONObject("mid").getString("value");
+                mids.add(mID.replace("http://rdf.freebase.com/ns/", ""));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return mids;
+    }
 	
 	protected JSONArray getJSONArray(String query) throws IOException{
 		

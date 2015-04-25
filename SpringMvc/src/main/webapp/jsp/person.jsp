@@ -19,23 +19,10 @@
 	<tiles:putAttribute name="scripts">
 		<script>
 			var personID = '${person.mID}';
-			
-			$(function() {
-				$('#widgets > h2 > a').on('click', function (e) {
-					e.preventDefault();
-					
-					var divId = $(this).attr('id').replace('Link', '');
-					
-					var widgetDiv = document.getElementById(divId);
-				     
-					if (widgetDiv.style.display == "none"){
-						widgetDiv.style.display = "";
-					} else {
-						widgetDiv.style.display = "none";
-					}
-				});
-			});
+			var personName = '${person.name}';
 		</script>
+		
+		<script src="<c:url value="/resources/js/connectionSearch.js" />" charset="utf-8"></script>
 	
 		<c:forEach items="${widgets}" var="widget">
 			<c:if test="${not empty widget.scriptPath}">
@@ -59,13 +46,15 @@
 				<c:out value="${person.description}"/>
 			</p>
 		</div>
-		
+
 		<div class="group" id="widgets">
 			<c:forEach items="${widgets}" var="widget">
 			
 				<h2><a href="#" id="widgetLink${widget.id}">${widget.name}</a></h2>
 				<div id="widget${widget.id}" style="display:none">
+					<input type="hidden" value="${widget.acceptedType }" />
 					<c:if test="${not empty widget.jspPath}">
+					
 					<jsp:include page="${widget.jspPath}" />
 					</c:if>
 				</div>
@@ -77,9 +66,12 @@
 	</tiles:putAttribute>
 	
 	<tiles:putAttribute name="secondaryNav">
-		<h2>Secondary Navigation</h2>
-		<ul>
-			<li>Test</li>
-		</ul>
+	
+		<div id="connectionSearch" style="position: absolute;">
+			<h2>Connect other persons</h2>
+			<input type="text" id="connectionSearchInput" value="Search...">
+			<input type="hidden" id="connectionSearchType" value="" />
+			<div id="connectionSearchResult"></div>
+		</div>
 	</tiles:putAttribute>
 </tiles:insertDefinition>
