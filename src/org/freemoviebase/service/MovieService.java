@@ -92,14 +92,13 @@ public class MovieService  extends BaseService implements IMovieService {
     					"SELECT DISTINCT ?film ?filmTitle " +
     					"FROM <http://fmb.org> "+
     					"WHERE { "+
-						"?film ns:type.object.type ns:film.film. "+
-						"?film ns:type.object.name ?filmTitle. "+
-						"?film ns:film.film.starring ?perf1. "+
-						"?film ns:film.film.starring ?perf2. "+
-						"?perf1 ns:film.performance.actor ?actor1. "+
-						"?perf2 ns:film.performance.actor ?actor2. "+
-						"FILTER (?actor1 = ns:%s && ?actor2 = ns:%s)} "+
-						"LIMIT 10";
+						"?film ns:type.object.type ns:film.film. " +
+						"?film ns:type.object.name ?filmTitle. " +
+						"?film ns:film.film.starring ?perf1. " +
+						"?film ns:film.film.starring ?perf2. " +
+						"?perf1 ns:film.performance.actor ?actor1. " +
+						"?perf2 ns:film.performance.actor ?actor2. " +
+						"FILTER (?actor1 = ns:%s && ?actor2 = ns:%s)}";
 
     	query = String.format(query, "m." + uriActor1, "m." + uriActor2);
     	

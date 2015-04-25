@@ -1,5 +1,2 @@
-<div id="personMovieDroppable">
-<p>
-Hier!!
-</p>
+<div id="personMovieGraph">
 </div>

@@ -19,7 +19,8 @@ public class WidgetService implements IWidgetService {
     	w3.setCssPath("/resources/css/widgets/personAwards.css");
     	w3.setScriptPath("/resources/js/widgets/personAwards.js");
     	
-    	Widget w4 = new Widget(4, "Filme mit anderen Schauspielern"); 
+    	Widget w4 = new Widget(4, "Filme mit anderen Schauspielern");
+    	w4.setCssPath("/resources/css/widgets/personMovie.css");
     	w4.setJspPath("/WEB-INF/jsp/widgets/personMovie.jsp");
     	w4.setScriptPath("/resources/js/widgets/personMovie.js");
     	

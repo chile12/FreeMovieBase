@@ -19,6 +19,7 @@
 	<tiles:putAttribute name="scripts">
 		<script>
 			var personID = '${person.mID}';
+			var personName = '${person.name}';
 			
 			$(function() {
 				$('#widgets > h2 > a').on('click', function (e) {
@@ -30,9 +31,40 @@
 				     
 					if (widgetDiv.style.display == "none"){
 						widgetDiv.style.display = "";
+						
+						var top = $('#' + divId).position().top;
+						
+						$('#personSearch').animate({ "top": "+=" + top + "px" }, "slow" );
+						
 					} else {
 						widgetDiv.style.display = "none";
 					}
+				});
+				
+				$("#personSearchInput")
+					.focusin(function() {
+						this.value = '';
+					})
+					.focusout(function() {
+						this.value = 'Search...';
+					})
+					.on('input', function() {
+					
+						var value = $(this).val();
+						
+						if(value.length > 2){
+							$.getJSON("/MovieDB/home/search", { term: value, count: 6 } )
+								.done(function(data) {
+									
+									$("#personSearchResult").empty();
+									
+									$.each(data, function(i, item) {
+										$("#personSearchResult").append('<p id="' + data[i].uri + '" class="ui-state-default">' + data[i].label + '</p>');
+									});
+									
+									$("#personSearchResult > p").draggable({ opacity: 0.7, helper: "clone" });
+								});
+						}
 				});
 			});
 		</script>
@@ -59,7 +91,7 @@
 				<c:out value="${person.description}"/>
 			</p>
 		</div>
-		
+
 		<div class="group" id="widgets">
 			<c:forEach items="${widgets}" var="widget">
 			
@@ -79,42 +111,11 @@
 	
 	<tiles:putAttribute name="secondaryNav">
 	
-	<script>
-	
-	$(function() {
-		$("#personSearch")
-			.focusin(function() {
-				this.value = '';
-			})
-			.focusout(function() {
-				this.value = 'Suche...';
-			})
-			.on('input', function() {
-				
-				var value = $(this).val();
-				
-				if(value.length > 2){
-					$.getJSON("/MovieDB/home/search", { term: value, count: 6 } )
-						.done(function(data) {
-							
-							$("#personSearchResult").empty();
-							
-							$.each(data, function(i, item) {
-								$("#personSearchResult").append('<p id="' + data[i].uri + '" class="ui-state-default">' + data[i].label + '</p>');
-							});
-							
-							$("#personSearchResult > p").draggable({ opacity: 0.7, helper: "clone" });
-						});
-				}
-			});
-	});
-	
-	</script>
-	
-		<h2>Secondary Navigation</h2>
-		<input type="text" id="personSearch" value="Suche...">
-		
-		<div id="personSearchResult">
+		<div id="personSearch" style="position: absolute;">
+			<h2>Connect other persons</h2>
+			<input type="text" id="personSearchInput" value="Search...">
+			
+			<div id="personSearchResult"></div>
 		</div>
 	</tiles:putAttribute>
 </tiles:insertDefinition>
