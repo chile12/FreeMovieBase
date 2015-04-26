@@ -4,7 +4,7 @@ $(function() {
 			this.value = '';
 		})
 		.focusout(function() {
-			this.value = 'Suche...';
+			this.value = 'Search...';
 		})
 		// don't navigate away from the field on tab when selecting an item
 		.bind("keydown", function(event) {

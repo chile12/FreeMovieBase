@@ -114,6 +114,28 @@ public class MovieController {
 
         return new ResponseEntity<String>(actor1Json.toString(), headers, HttpStatus.OK);
     }
+    
+    @RequestMapping("/getCountries")
+    public ResponseEntity<String> getMovieCountries(@RequestParam(value="uri", required=true) String uri, Model model) {
+    	HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
+    	
+        Movie movie = movieService.getMovie(uri);
+        movieService.LoadAdditionalInformations(movie);
+        
+        JSONObject fillJson = new JSONObject();
+        fillJson.put("fillKey", "MEDIUM");
+        
+        JSONObject countriesJson = new JSONObject();
+        
+        countriesJson.put("RUS", fillJson);
+        
+        for(String country : movie.getCountries()){
+        	//countriesJson.put(country);
+        }
+    	
+    	return new ResponseEntity<String>(countriesJson.toString(), headers, HttpStatus.OK);
+    }
 
     @RequestMapping(value = "/search")
     public ResponseEntity<String> getSearch(@RequestParam(value="term", required=true) String term, @RequestParam(value="count", defaultValue="0") int count) {

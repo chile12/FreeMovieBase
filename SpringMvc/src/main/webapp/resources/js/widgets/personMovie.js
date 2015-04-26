@@ -37,7 +37,7 @@ $(function() {
 
 	function drawPersonMovieGraph(actor1, actor2){
 	
-		$.getJSON(baseUrl + "/movies/byActors", { actor1: actor1, actor2: actor2 })
+		$.getJSON(baseUrl + "movies/byActors", { actor1: actor1, actor2: actor2 })
 			.done(function(data) {
 				
 				drawPersonMovieGraphByData(data);

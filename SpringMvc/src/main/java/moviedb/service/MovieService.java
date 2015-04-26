@@ -47,6 +47,7 @@ public class MovieService  extends BaseService implements IMovieService {
 				"FROM <http://fmb.org> " +
 				"WHERE { " +
 				"?film ns:type.object.type ns:film.film. " +
+				"?film ns:type.object.name ?filmTitle. " +
 				"FILTER (REGEX(STR(?filmTitle), \"%s\", \"i\"))}" +
 				"ORDER BY (?filmTitle) " +
 				"LIMIT " + count;

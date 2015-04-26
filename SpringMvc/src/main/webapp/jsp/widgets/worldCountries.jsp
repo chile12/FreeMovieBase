@@ -22,11 +22,13 @@
             MEDIUM: '#56AED4',
             defaultFill: '#888888'
         },
-        data: {
+        dataUrl: baseUrl + 'movies/getCountries?uri=' + movieID,
+		data: { },
+        /*data: {
             "RUS": {
                 "fillKey": "MEDIUM"
             }
-        },
+        },*/
         geographyConfig: {
             popupTemplate: function(geo, data) {
                 return ['<div class="hoverinfo"><strong>',
