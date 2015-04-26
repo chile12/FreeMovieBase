@@ -15,4 +15,6 @@ public interface IMovieService {
     public List<Movie> getMoviesByActors(String uriActor1, String uriActor2);
 
     public void LoadAdditionalInformations(Movie movie);
+
+    public List<Movie> GetBirthdayChildren();
 }

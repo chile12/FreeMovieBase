@@ -356,6 +356,23 @@ public class PersonService extends BaseService implements IPersonService {
         }
     }
 
+    public List<Person> GetBirthdayChildren()
+    {
+        String query = "PREFIX ns: <http://rdf.freebase.com/ns/> \n" +
+                "PREFIX key: <http://rdf.freebase.com/key/> \n" +
+                "SELECT DISTINCT (?actor as ?mid)" +
+                "FROM <http://fmb.org>\n" +
+                "WHERE { ?actor ns:type.object.type ns:film.actor. \n" +
+                "?actor ns:people.person.date_of_birth ?bd.\n" +
+                "OPTIONAL{?actor ns:people.deceased_person.date_of_death ?death.}\n" +
+                "FILTER(bif:isNull(?death))\n" +
+                "FILTER( !bif:isNull(xsd:date(?bd)) && \n" +
+                "bif:dayofmonth(?bd) = bif:dayofmonth(bif:curdate('')) && \n" +
+                "bif:month(?bd) = bif:month(bif:curdate('')))}";
+
+        return resolveMidList(evalQueryResult(query));
+    }
+
     public static List<Person> resolveMidList(List<String> mids)
     {
         List<Person> actors = new LinkedList<Person>();

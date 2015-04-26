@@ -8,6 +8,7 @@ import moviedb.service.IMovieService;
 import moviedb.service.IPersonService;
 
 import java.util.List;
+import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -31,6 +32,7 @@ public class HomeController {
     @RequestMapping("")
     public String getHome(@RequestParam(value="id", required=false, defaultValue = "0") int id, Model model) {
 
+<<<<<<< HEAD
         List<Person> persons = personService.getPersonsByAward("m.0g_w", 2012);
         List<Movie> movies = movieService.getMoviesByAward("m.0g_w", 2012);
 
@@ -38,6 +40,16 @@ public class HomeController {
         
         Movie currentMovie = movieService.getMovie("m.0cs0tcb");
         
+=======
+        List<Person> persons = personService.getPersonsByAward("m.0g_w", 2013);
+        List<Movie> movies = movieService.getMoviesByAward("m.0g_w", 2013);
+
+        Random rand = new Random();
+        Person birthday = personService.GetBirthdayChildren().get(rand.nextInt(10));
+        personService.LoadAdditionalInformations(birthday);
+        Movie currentMovie = movieService.GetBirthdayChildren().get(rand.nextInt(10));
+        movieService.LoadAdditionalInformations(currentMovie);
+>>>>>>> 4d30b5a... final for today :)
         model.addAttribute("persons", persons.subList(0, 4));
         model.addAttribute("movies", movies.subList(0, 4));
         model.addAttribute("birthdayPerson", birthday);
