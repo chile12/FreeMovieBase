@@ -3,6 +3,7 @@ package moviedb.service;
 import java.io.IOException;
 import java.util.List;
 
+import moviedb.domain.Movie;
 import moviedb.domain.Person;
 
 public interface IPersonService {
@@ -16,4 +17,8 @@ public interface IPersonService {
     public String getAvardsCountJson(String uri) throws IOException;
 
     public List<Person> getPersonByMovies(String uriMovie1, String uriMovie2);
+
+    public void LoadAdditionalInformations(Person person);
+
+    public List<Person> resolveMidList(List<String> mids);
 }

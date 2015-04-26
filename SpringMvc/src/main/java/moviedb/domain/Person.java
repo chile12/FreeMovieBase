@@ -5,7 +5,10 @@
  */
 package moviedb.domain;
 
+import moviedb.service.PersonService;
+
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -20,7 +23,7 @@ public class Person extends Topic {
         director,
         writer,
         producer,
-        musiccontributor,
+        music_contributor,
         film_subject
     }
 
@@ -29,10 +32,11 @@ public class Person extends Topic {
         Female
     }
 
-	public Person() {
-		
+	public Person(PersonService service) {
+		this.service = service;
 	}
 
+    private PersonService service;
     private Date birthday;
     private Date deathday;
     private Sex gender;
@@ -49,7 +53,13 @@ public class Person extends Topic {
     private List<String> children =  new ArrayList<String>();
     private List<String> siblings =  new ArrayList<String>();
     private List<String> merriages =  new ArrayList<String>();
+    private List<Merriage> merrs;
     private List<String> languages =  new ArrayList<String>();
+    private List<String> moviesActor = new ArrayList<String>();
+    private List<String> moviesDirector =  new ArrayList<String>();
+    private List<String> moviesWriter =  new ArrayList<String>();
+    private List<String> moviesProducer =  new ArrayList<String>();
+    private List<String> moviesMusicer =  new ArrayList<String>();
     
 	public String getName() {
 		return this.getTitle();
@@ -136,11 +146,11 @@ public class Person extends Topic {
         this.causeOfDeath = causeOfDeath;
     }
 
-    public Double getWightKg() {
+    public Double getWeight() {
         return wightKg;
     }
 
-    public void setWightKg(Double wightKg) {
+    public void setWeight(Double wightKg) {
         this.wightKg = wightKg;
     }
 
@@ -152,36 +162,28 @@ public class Person extends Topic {
         this.height = height;
     }
 
-    public List<String> getParents() {
-        return parents;
+    public List<Person> getParents() {
+        return service.resolveMidList(parents);
     }
 
-    public void setParents(List<String> parents) {
-        this.parents = parents;
+    public void addParent(String mid){parents.add(mid);}
+
+    public List<Person> getChildren() {
+        return service.resolveMidList(children);
     }
 
-    public List<String> getChildren() {
-        return children;
+    public void addChild(String mid){children.add(mid);}
+
+    public List<Merriage> getMerriages() {
+        if(merrs == null)
+            merrs = service.createMerriages(this, merriages);
+        return merrs;
     }
 
-    public void setChildren(List<String> children) {
-        this.children = children;
-    }
-
-    public List<String> getMerriages() {
-        return merriages;
-    }
-
-    public void setMerriages(List<String> merriages) {
-        this.merriages = merriages;
-    }
+    public void addMerriage(String mid){merriages.add(mid);}
 
     public List<String> getLanguages() {
         return languages;
-    }
-
-    public void setLanguages(List<String> languages) {
-        this.languages = languages;
     }
 
     public String getSpouse() {
@@ -192,11 +194,39 @@ public class Person extends Topic {
         this.spouse = spouse;
     }
 
-    public List<String> getSiblings() {
-        return siblings;
+    public List<Person> getSiblings() {
+        return service.resolveMidList(siblings);
     }
 
-    public void setSiblings(List<String> siblings) {
-        this.siblings = siblings;
+    public void addSibling(String mid)
+    {
+        siblings.add(mid);
     }
+
+    public List<String> getMoviesActor() {
+        return moviesActor;
+    }
+
+    public List<String> getMoviesDirector() {
+        return moviesDirector;
+    }
+
+    public List<String> getMoviesWriter() {
+        return moviesWriter;
+    }
+
+    public List<String> getMoviesProducer() {
+        return moviesProducer;
+    }
+
+    public List<String> getMoviesMusicer() {
+        return moviesMusicer;
+    }
+
+    public static Comparator<Person> PersonComperator = new Comparator<Person>() {
+        @Override
+        public int compare(Person o1, Person o2) {
+            return o2.getAwardCount() - o1.getAwardCount();
+        }
+    };
 }

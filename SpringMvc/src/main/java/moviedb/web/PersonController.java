@@ -53,7 +53,7 @@ public class PersonController {
     public String getPerson(@RequestParam(value="uri", required=true) String uri, Model model) {
 
         Person person = personService.getPerson(uri);
-
+        personService.LoadAdditionalInformations(person);
         model.addAttribute("item", person);
         model.addAttribute("person", person);
 

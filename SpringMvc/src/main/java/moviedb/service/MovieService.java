@@ -23,21 +23,19 @@ public class MovieService  extends BaseService implements IMovieService {
     public List<Movie> getMoviesByAward(String uri, int year){
 
         List<Movie> movies = new ArrayList<Movie>();
-		String query = "PREFIX ns: <http://rdf.freebase.com/ns/> " +
-				"SELECT DISTINCT (?film as ?mid) " +
-				"FROM <http://fmb.org> " +
-				"WHERE { " +
-				"?film ns:type.object.type ns:film.film. " +
-				"?film ns:common.topic.image ?image. " + 
-				"?film ns:award.award_winning_work.awards_won ?awardHonor. " +
-				"?awardHonor ns:award.award_honor.year ?year. " +
-				"?awardHonor ns:award.award_honor.award ?awardCategory. " + 
-				"?awardCategory ns:award.award_category.category_of ?award. " +
-				"?award ns:type.object.name ?awardName. " +
-				"FILTER(?award = ns:%s  && YEAR(?year) >= %s)} " +
-				"GROUP BY ?film ?filmTitle ?year " +
-				"ORDER BY DESC(?year) " +
-				"LIMIT 100";
+		String query = "PREFIX ns: <http://rdf.freebase.com/ns/> \n" +
+                "SELECT DISTINCT (?film as ?mid)  (COUNT(?film) as ?oscars)\n" +
+                "FROM <http://fmb.org> \n" +
+                "WHERE { \n" +
+                "?film ns:type.object.type ns:film.film. \n" +
+                "?film ns:award.award_winning_work.awards_won ?awardHonor. \n" +
+                "?awardHonor ns:award.award_honor.year ?year. \n" +
+                "?awardHonor ns:award.award_honor.award ?awardCategory. \n" +
+                "?awardCategory ns:award.award_category.category_of ?award. \n" +
+                "?award ns:type.object.name ?awardName. \n" +
+                "FILTER(?award = ns:%s  && YEAR(?year) = %d)}\n" +
+                "GROUP BY ?film ?year\n" +
+                "ORDER BY DESC(?oscars)";
     	query = String.format(query, uri, year);
         return getMovies(evalQueryResult(query));
     }
@@ -80,22 +78,22 @@ public class MovieService  extends BaseService implements IMovieService {
         //extracts basic Informations about the movie
         String query = "PREFIX ns: <http://rdf.freebase.com/ns/> \n" +
                 "PREFIX key: <http://rdf.freebase.com/key/> \n" +
-                "                SELECT DISTINCT ?film ?wikiId ?filmTitle (group_concat(distinct ?website;separator=\",&\") as ?websites) (group_concat(distinct ?country;separator=\",&\") as ?countries) ?series ?tagline (group_concat(distinct ?description;separator=\",&\") as ?descriptions) \n" +
+                "SELECT (group_concat(distinct ?f;separator=\",&\") as ?film) ?wikiId ?filmTitle (group_concat(distinct ?website;separator=\",&\") as ?websites) (group_concat(distinct ?country;separator=\",&\") as ?countries) ?series ?tagline (group_concat(distinct ?description;separator=\",&\") as ?descriptions) \n" +
                 "FROM <http://fmb.org>\n" +
                 "                WHERE { \n" +
-                "                OPTIONAL{?film ns:type.object.name ?filmTitle. }\n" +
-                "                OPTIONAL{?film key:wikipedia.en_id ?wikiId. }\n" +
-                "                OPTIONAL{?film ns:common.topic.official_website ?website.}\n" +
-                "                OPTIONAL{?film ns:film.film.tagline ?tagline.  }\n" +
-                "                OPTIONAL{?film ns:common.topic.description ?description.  }\n" +
-                "                OPTIONAL{?film ns:film.film.country / ns:type.object.name ?country.  }\n" +
-                "                OPTIONAL{?film ns:film.film.film_series / ns:type.object.name ?series.  }\n" +
-                "FILTER ( ?film in ( ";
+                "                OPTIONAL{?f ns:type.object.name ?filmTitle. }\n" +
+                "                OPTIONAL{?f  key:wikipedia.en_id ?wikiId. }\n" +
+                "                OPTIONAL{?f  ns:common.topic.official_website ?website.}\n" +
+                "                OPTIONAL{?f ns:film.film.tagline ?tagline.  }\n" +
+                "                OPTIONAL{?f ns:common.topic.description ?description.  }\n" +
+                "                OPTIONAL{?f ns:film.film.country / ns:type.object.name ?country.  }\n" +
+                "                OPTIONAL{?f ns:film.film.film_series / ns:type.object.name ?series.  }\n" +
+                "FILTER ( ?f in ( ";
         for(String mid : mids)
         {
             query += "ns:" + mid + ",";
         }
-        query = query.substring(0, query.length()-1) + "))} GROUP BY ?websites ?countries ?filmTitle ?wikiId ?film ?series ?tagline ?descriptions";
+        query = query.substring(0, query.length()-1) + "))} GROUP BY ?filmTitle ?wikiId ?series ?tagline";
 
     	try {
 	    	JSONArray arr = getJSONArray(query);
@@ -136,17 +134,17 @@ public class MovieService  extends BaseService implements IMovieService {
             String zw = json.getJSONObject("websites").getString("value");
             if(zw.contains(",&"))
                 zw = zw.substring(0, zw.indexOf(",&"));
-            movie.setWebSite(zw);
+            movie.setWebsite(zw);
         }
-        if(json.has("description"))
+        if(json.has("descriptions"))
         {
-            String zw = json.getJSONObject("description").getString("value");
+            String zw = json.getJSONObject("descriptions").getString("value");
             String[] descs = zw.split(",\\&");
             zw = "";
             for(String st : descs)
                 if(zw.length() < st.length())
                     zw = st;
-            movie.setWebSite(zw);
+            movie.setDescription(zw);
         }
         if(json.has("wikiId")) movie.setWikiID(json.getJSONObject("wikiId").getString("value"));
         if(json.has("series")) movie.setSeries(json.getJSONObject("series").getString("value"));
@@ -163,8 +161,11 @@ public class MovieService  extends BaseService implements IMovieService {
 		return movie;
     }
 
-    public Movie additionalInformations(Movie movie)
+    @Override
+    public void LoadAdditionalInformations(Movie movie)
     {
+        if(movie == null || movie.getLoaded())
+            return;
         //extracts additional Informations about the movie
         String query = "PREFIX ns: <http://rdf.freebase.com/ns/> \n" +
                 "PREFIX key: <http://rdf.freebase.com/key/> \n" +
@@ -197,7 +198,7 @@ public class MovieService  extends BaseService implements IMovieService {
                         movie.setReleaseDateGermany(formatter.parse(filmJson.getJSONObject("release").getString("value")));
 
                     if (filmJson.has("companies")) {
-                        movie.getCountries().clear();
+                        movie.getCompanies().clear();
                         for (String c : filmJson.getJSONObject("companies").getString("value").split(",\\&")) {
                             movie.getCompanies().add(c);
                         }
@@ -209,7 +210,10 @@ public class MovieService  extends BaseService implements IMovieService {
                         }
                     }
                 }
-                movie.getActors().put(filmJson.getJSONObject("actor").getString("value"), filmJson.getJSONObject("character").getString("value"));
+                if (filmJson.has("character"))
+                    movie.addActor(filmJson.getJSONObject("actor").getString("value"), filmJson.getJSONObject("character").getString("value"));
+                else
+                    movie.addActor(filmJson.getJSONObject("actor").getString("value"), null);
             }
 
         } catch (UnsupportedEncodingException e) {
@@ -219,7 +223,6 @@ public class MovieService  extends BaseService implements IMovieService {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        return movie;
     }
 
     private void addMovieToCache(Movie mov)

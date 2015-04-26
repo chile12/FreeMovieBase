@@ -13,7 +13,7 @@ public abstract class Topic {
     private String wikiID;
 	private boolean queriedForImages = false;
 	private List<String> imagePaths = new ArrayList<String>();
-
+    private boolean loaded = false;
 	
 	public String getmID() {
 		return mID;
@@ -66,11 +66,11 @@ public abstract class Topic {
         this.description = description;
     }
 
-    public String getWebSite() {
+    public String getWebsite() {
         return webSite;
     }
 
-    public void setWebSite(String webSite) {
+    public void setWebsite(String webSite) {
         this.webSite = webSite;
     }
 
@@ -80,5 +80,13 @@ public abstract class Topic {
 
     public void setQueriedForImages(boolean queriedForImages) {
         this.queriedForImages = queriedForImages;
+    }
+
+    public Boolean getLoaded() {
+        return loaded;
+    }
+
+    public void setLoaded(Boolean loaded) {
+        this.loaded = loaded;
     }
 }

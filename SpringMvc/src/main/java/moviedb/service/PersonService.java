@@ -5,6 +5,7 @@
  */
 package moviedb.service;
 
+import moviedb.domain.Merriage;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import moviedb.domain.Person;
@@ -85,7 +86,7 @@ public class PersonService extends BaseService implements IPersonService {
         {
             query += "ns:" + mid + ",";
         }
-        query = query.substring(0, query.length()-1) + "))} GROUP BY ?p ?name ?wikiId ?websites ?descriptions ?nationalities ?gender";
+        query = query.substring(0, query.length()-1) + "))} GROUP BY ?p ?name ?wikiId ?gender";
         try {
             JSONArray arr = getJSONArray(query);
 
@@ -112,7 +113,7 @@ public class PersonService extends BaseService implements IPersonService {
         if(personCache.keySet().contains(mID))
             return personCache.get(mID);
 
-        Person person = new Person();
+        Person person = new Person(this);
         person.setmID(mID);
 
         if(json.has("name")) person.setTitle(json.getJSONObject("name").getString("value"));
@@ -121,17 +122,17 @@ public class PersonService extends BaseService implements IPersonService {
             String zw = json.getJSONObject("websites").getString("value");
             if(zw.contains(",&"))
                 zw = zw.substring(0, zw.indexOf(",&"));
-            person.setWebSite(zw);
+            person.setWebsite(zw);
         }
-        if(json.has("description"))
+        if(json.has("descriptions"))
         {
-            String zw = json.getJSONObject("description").getString("value");
+            String zw = json.getJSONObject("descriptions").getString("value");
             String[] descs = zw.split(",\\&");
             zw = "";
             for(String st : descs)
                 if(zw.length() < st.length())
                     zw = st;
-            person.setWebSite(zw);
+            person.setDescription(zw);
         }
         if(json.has("awards")) person.setAwardCount(json.getJSONObject("awards").getInt("value"));
         if(json.has("wikiId")) person.setWikiID(json.getJSONObject("wikiId").getString("value"));
@@ -179,16 +180,70 @@ public class PersonService extends BaseService implements IPersonService {
 		return getResponse(BaseService.baseFreebaseQueryUrl + query);
 	}
 
-    public Person additionalInformations(Person movie)
+    public List<Merriage> createMerriages(Person sp1, List<String> mids)
     {
-        //extracts additional Informations about the movie
+        List<Merriage> merriages = new ArrayList<Merriage>();
         String query = "PREFIX ns: <http://rdf.freebase.com/ns/> \n" +
                 "PREFIX key: <http://rdf.freebase.com/key/> \n" +
+                "SELECT DISTINCT ?spouse ?from ?to \n" +
+                "FROM <http://fmb.org> \n" +
+                "WHERE { ?m  ns:people.marriage.spouse  ?spouse." +
+                "OPTIONAL{?m ns:people.marriage.from  ?from.} " +
+                "OPTIONAL{?m ns:people.marriage.to  ?to.} " +
+                "FILTER(?spouse != ns:" + sp1.getmID() + " ) " +
+                "FILTER ( ?m in ( ";
+        for(String mid : mids)
+        {
+            query += "ns:" + mid + ",";
+        }
+        query = query.substring(0, query.length()-1) + "))}";
+        try {
+            JSONArray arr = getJSONArray(query);
+
+            for(int i = 0 ; i < arr.length(); i++){
+                JSONObject json = arr.getJSONObject(i);
+                Merriage m = new Merriage(sp1);
+                String sp = json.getJSONObject("spouse").getString("value");
+                sp = sp.substring(sp.lastIndexOf("/") +1);
+                List<Person> sps = resolveMidList(Arrays.asList(sp));
+                if(sps.size()>0)
+                    m.setSpouse2(sps.get(0));
+                if(json.has("from")) m.setFrom(formatter.parse(json.getJSONObject("from").getString("value")));
+                if(json.has("to")) m.setFrom(formatter.parse(json.getJSONObject("to").getString("value")));
+                merriages.add(m);
+            }
+
+        } catch (UnsupportedEncodingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return merriages;
+    }
+
+    @Override
+    public void LoadAdditionalInformations(Person person)
+    {
+        if(person == null || person.getLoaded())
+            return;
+        //extracts additional Informations about the movie
+        String query =
+                "PREFIX ns: <http://rdf.freebase.com/ns/> \n" +
+                "PREFIX key: <http://rdf.freebase.com/key/> \n" +
                 "SELECT DISTINCT ?height ?weight ?birthdate ?birthplace ?deathdate ?deathplace ?causedeath (group_concat(distinct ?language;separator=\",&\") as ?languages)\n" +
-                "(group_concat(distinct (bif:subseq(str(?parent), bif:strrchr(str(?parent), '.')+1));separator=\",&\") as ?parents) \n" +
-                "(group_concat(distinct (bif:subseq(str(?child), bif:strrchr(str(?child), '.')+1));separator=\",&\") as ?children)\n" +
-                "(group_concat(distinct (bif:subseq(str(?merriage), bif:strrchr(str(?merriage), '.')+1));separator=\",&\") as ?merriages) \n" +
-                "(group_concat(distinct (bif:subseq(str(?sibling), bif:strrchr(str(?sibling), '.')+1));separator=\",&\") as ?siblings)\n" +
+                "(group_concat(distinct (bif:subseq(str(?parent), bif:strrchr(str(?parent), '/')+1));separator=\",&\") as ?parents) \n" +
+                "(group_concat(distinct (bif:subseq(str(?child), bif:strrchr(str(?child), '/')+1));separator=\",&\") as ?children)\n" +
+                "(group_concat(distinct (bif:subseq(str(?merriage), bif:strrchr(str(?merriage), '/')+1));separator=\",&\") as ?merriages) \n" +
+                "(group_concat(distinct (bif:subseq(str(?sibling), bif:strrchr(str(?sibling), '/')+1));separator=\",&\") as ?siblings)\n" +
+                "(group_concat(distinct (CONCAT(CONCAT(bif:subseq(str(?actorin), bif:strrchr(str(?actorin), '/')+1), '+++'), str(?actorInName)));separator=\",&\") as ?actorInMovies)\n" +
+                "(group_concat(distinct (CONCAT(CONCAT(bif:subseq(str(?musicContrib), bif:strrchr(str(?musicContrib), '/')+1), '+++'), str(?musicContribName)));separator=\",&\") as ?musicFor)\n" +
+                "(group_concat(distinct (CONCAT(CONCAT(bif:subseq(str(?writerfor), bif:strrchr(str(?writerfor), '/')+1), '+++'), str(?writerforName)));separator=\",&\") as ?writtenFor)\n" +
+                "(group_concat(distinct (CONCAT(CONCAT(bif:subseq(str(?produced), bif:strrchr(str(?produced), '/')+1), '+++'), str(?producedName)));separator=\",&\") as ?producedMovies)\n" +
+                "(group_concat(distinct (CONCAT(CONCAT(bif:subseq(str(?directed), bif:strrchr(str(?directed), '/')+1), '+++'), str(?directedName)));separator=\",&\") as ?directedMovies)\n" +
                 "                FROM <http://fmb.org> \n" +
                 "                WHERE { \n" +
                 "                OPTIONAL{?p ns:people.deceased_person.place_of_death / ns:type.object.name ?deathplace.  }\n" +
@@ -202,10 +257,16 @@ public class PersonService extends BaseService implements IPersonService {
                 "                OPTIONAL{?p ns:people.person.parents ?parent. }\n" +
                 "                OPTIONAL{?p ns:people.person.children ?child. }\n" +
                 "                OPTIONAL{?p ^ns:people.marriage.spouse ?merriage. }\n" +
-                "                OPTIONAL{?p ^ns:people.sibling_relationship.sibling/ns:people.sibling_relationship.sibling ?sibling. }\n" +
+                "                OPTIONAL{?p ^ns:film.performance.actor / ns:film.performance.film ?actorin. ?actorin ns:type.object.name ?actorInName}\n" +
+                "                OPTIONAL{?p ^ns:film.film.music ?musicContrib. ?musicContrib ns:type.object.name ?musicContribName}\n" +
+                "                OPTIONAL{?p ^ns:film.film.written_by ?writerfor. ?writerfor ns:type.object.name ?writerforName}\n" +
+                "                OPTIONAL{?p ^ns:film.film.produced_by ?produced. ?produced ns:type.object.name ?producedName}\n" +
+                "                OPTIONAL{?p ^ns:film.film.executive_produced_by ?produced. ?produced ns:type.object.name ?producedName}\n" +
+                "                OPTIONAL{?p ^ns:film.film.directed_by ?directed.?directed ns:type.object.name ?directedName}\n" +
+                "                OPTIONAL{?p ^ns:people.sibling_relationship.sibling/ns:people.sibling_relationship.sibling ?sibling. FILTER(?sibling != ns:%s)}\n" +
                 "                FILTER ( ?p = ns:%s)\n" +
                 "}";
-        query = String.format(query, movie.getmID());
+        query = String.format(query, person.getmID(), person.getmID());
 
         try {
             JSONArray arr = getJSONArray(query);
@@ -214,42 +275,73 @@ public class PersonService extends BaseService implements IPersonService {
             {
                 JSONObject json = arr.getJSONObject(i);
                 if( i == 0) {
-                    if (json.has("height")) movie.setHeight(json.getJSONObject("height").getDouble("value"));
-                    if (json.has("weight")) movie.setWightKg(json.getJSONObject("weight").getDouble("value"));
-                    if (json.has("deathplace")) movie.setPlaceOfDeath(json.getJSONObject("deathplace").getString("value"));
-                    if (json.has("birthplace")) movie.setPlaceOfBirth(json.getJSONObject("birthplace").getString("value"));
-                    if (json.has("causedeath")) movie.setCauseOfDeath(json.getJSONObject("causedeath").getString("value"));
-                    if (json.has("deathdate")) movie.setDeathday(formatter.parse(json.getJSONObject("deathdate").getString("value")));
-                    if (json.has("birthdate")) movie.setBirthday(formatter.parse(json.getJSONObject("birthday").getString("value")));
+                    if (json.has("height")) person.setHeight(json.getJSONObject("height").getDouble("value"));
+                    if (json.has("weight")) person.setWeight(json.getJSONObject("weight").getDouble("value"));
+                    if (json.has("deathplace")) person.setPlaceOfDeath(json.getJSONObject("deathplace").getString("value"));
+                    if (json.has("birthplace")) person.setPlaceOfBirth(json.getJSONObject("birthplace").getString("value"));
+                    if (json.has("causedeath")) person.setCauseOfDeath(json.getJSONObject("causedeath").getString("value"));
+                    if (json.has("deathdate")) person.setDeathday(formatter.parse(json.getJSONObject("deathdate").getString("value")));
+                    if (json.has("birthdate")) person.setBirthday(formatter.parse(json.getJSONObject("birthdate").getString("value")));
 
                     if (json.has("languages")) {
-                        movie.getLanguages().clear();
+                        person.getLanguages().clear();
                         for (String c : json.getJSONObject("languages").getString("value").split(",\\&")) {
-                            movie.getLanguages().add(c);
+                            person.getLanguages().add(c);
                         }
                     }
                     if (json.has("parents")) {
-                        movie.getParents().clear();
                         for (String c : json.getJSONObject("parents").getString("value").split(",\\&")) {
-                            movie.getParents().add(c);
+                            person.addParent(c);
                         }
                     }
                     if (json.has("children")) {
-                        movie.getChildren().clear();
                         for (String c : json.getJSONObject("children").getString("value").split(",\\&")) {
-                            movie.getChildren().add(c);
+                            person.addChild(c);
                         }
                     }
                     if (json.has("merriages")) {
-                        movie.getMerriages().clear();
                         for (String c : json.getJSONObject("merriages").getString("value").split(",\\&")) {
-                            movie.getMerriages().add(c);
+                            person.addMerriage(c);
                         }
                     }
                     if (json.has("siblings")) {
-                        movie.getSiblings().clear();
                         for (String c : json.getJSONObject("siblings").getString("value").split(",\\&")) {
-                            movie.getSiblings().add(c);
+                            person.addSibling(c);
+                        }
+                    }
+                    if (json.has("actorInMovies")) {
+                        person.getMoviesActor().clear();
+                        for (String c : json.getJSONObject("actorInMovies").getString("value").split(",\\&")) {
+                            if(!c.trim().equals("+++"))
+                                person.getMoviesActor().add(c);
+                        }
+                    }
+                    if (json.has("musicFor")) {
+                        person.getMoviesMusicer().clear();
+                        for (String c : json.getJSONObject("musicFor").getString("value").split(",\\&")) {
+                            if(!c.trim().equals("+++"))
+                            person.getMoviesMusicer().add(c);
+                        }
+                    }
+                    if (json.has("writtenFor")) {
+                        person.getMoviesWriter().clear();
+                        for (String c : json.getJSONObject("writtenFor").getString("value").split(",\\&")) {
+                            if(!c.trim().equals("+++"))
+                            person.getMoviesWriter().add(c);
+                        }
+                    }
+                    if (json.has("producedMovies")) {
+                        person.getMoviesProducer().clear();
+                        for (String c : json.getJSONObject("producedMovies").getString("value").split(",\\&")) {
+                            if(!c.trim().equals("+++"))
+                            person.getMoviesProducer().add(c);
+                        }
+                    }
+                    if (json.has("directedMovies")) {
+                        person.getMoviesDirector().clear();
+                        for (String c : json.getJSONObject("directedMovies").getString("value").split(",\\&")) {
+                            if(!c.trim().equals("+++"))
+                            person.getMoviesDirector().add(c);
                         }
                     }
                 }
@@ -262,7 +354,14 @@ public class PersonService extends BaseService implements IPersonService {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        return movie;
+    }
+
+    public List<Person> resolveMidList(List<String> mids)
+    {
+        List<Person> actors = new LinkedList<Person>();
+        actors.addAll(getPersons(mids));
+        Collections.sort(actors, Person.PersonComperator);
+        return actors;
     }
 
     public List<Person> getPersonByMovies(String uriMovie1, String uriMovie2){
@@ -280,8 +379,9 @@ public class PersonService extends BaseService implements IPersonService {
 
 
         return getPersons(evalQueryResult(query));
-
     }
+
+
 
     private void addPersonToCache(Person mov)
     {
