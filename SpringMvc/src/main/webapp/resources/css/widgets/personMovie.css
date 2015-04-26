@@ -1,24 +1,36 @@
 svg {
-	border: solid 1px #ccc;
+    border: solid 1px #ccc;
+}
+
+
+.actorNode {
+    font: 14px sans-serif;
+    cursor: pointer;
+    color:red;
 }
 
 .node {
-	font: 12px sans-serif;
-	cursor: pointer;
-	color:#525252;
+    font: 12px sans-serif;
+    cursor: pointer;
+    color:#525252;
+}
+
+.actorNode circle {
+    stroke: red;
+    stroke-width: 2px;
 }
 
 .node circle {
-	stroke: #525252;
-	stroke-width: 2px;
+    stroke: #525252;
+    stroke-width: 2px;
 }
 
 .node text {
-	
+
 }
 
 .link {
-	fill: none;
-	stroke: #525252;
-	stroke-width: 1.5px;
+    fill: none;
+    stroke: #525252;
+    stroke-width: 1.5px;
 }

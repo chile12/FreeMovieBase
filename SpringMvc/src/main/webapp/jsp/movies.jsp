@@ -10,14 +10,14 @@
 <tiles:insertDefinition name="movieTemplate">
     <tiles:putAttribute name="body">
 
-	<h1>Die letzten Oscar-Gewinner</h1>
+        <h1>The last Oscar winners</h1>
   	<ul class="nospace clear">
   		<c:set var="i" value="0"/>
 		<c:forEach items="${movies}" var="movie">
 	 	<li class="one_quarter ${i % 4 == 0 ? " first" : ""}">
-	 		<a href="/movies/get?uri=${movie.mID}">${movie.title}</a><br />
- 			<img class="imgl borderedbox inspace-5" style="height:80px" src="<c:url value="${movie.imagePath}"/>" alt="" />
- 			<c:set var="i" value="${i + 1}"/>
+            <a href="<c:url value="/movies/get?uri=${movie.mID}" />">${movie.title}<br />
+                <img class="imgl borderedbox inspace-5" style="height:80px" src="<c:url value="${movie.imagePath}"/>" alt="" />
+            </a>
 		</li>
 		</c:forEach>
   	</ul>

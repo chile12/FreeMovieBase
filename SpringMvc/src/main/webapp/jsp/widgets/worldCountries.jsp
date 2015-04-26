@@ -1,12 +1,10 @@
+
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="http://d3js.org/topojson.v1.min.js"></script>
-<script src="http://datamaps.github.io/scripts/datamaps.world.min.js"></script>
-<script src="http://datamaps.github.io/scripts/topojson.js"></script>
-<div id="container" style="position: relative; width: 500px; height: 300px;"></div>
-
+<script src="http://rawgithub.com/markmarkoh/datamaps/master/dist/datamaps.none.min.js"></script>
+<script src="/resources/js/worldD3.js"></script>
+<div id="container" style="height: 500px; width: 900px;"></div>
 <script>
-    var data;
-
     var map = new Datamap({
         element: document.getElementById('container'),
         fills: {
@@ -15,6 +13,16 @@
             MEDIUM: 'blue',
             UNKNOWN: '#FFFFFF',
             defaultFill: 'green'
+        },
+        data: {
+            "IRL": {
+                "fillKey": "LOW",
+                "numberOfThings": "2002"
+            },
+            "USA": {
+                "fillKey": "MEDIUM",
+                "numberOfThings": "10381"
+            }
         },
         geographyConfig: {
             popupTemplate: function(geo, data) {
@@ -27,10 +35,4 @@
         }
     });
     map.legend();
-
-
-    d3.json("path/to/data.json", function(error, json) {
-        data =
-        map.updateChoropleth(data);
-    });
 </script>

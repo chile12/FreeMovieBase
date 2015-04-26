@@ -20,6 +20,7 @@
 		<script>
 			var personID = '${person.mID}';
 			var personName = '${person.name}';
+            var imagePath = '${person.imagePath}';
 		</script>
 		
 		<script src="<c:url value="/resources/js/connectionSearch.js" />" charset="utf-8"></script>
