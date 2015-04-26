@@ -27,11 +27,11 @@ public class Movie extends Topic {
         this.actors = actors;
     }
 
-    public Date getReleaseDate() {
+    public Date getReleaseDateGermany() {
         return releaseDate;
     }
 
-    public void setReleaseDate(Date releaseDate) {
+    public void setReleaseDateGermany(Date releaseDate) {
         this.releaseDate = releaseDate;
     }
 

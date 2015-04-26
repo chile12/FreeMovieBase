@@ -7,7 +7,7 @@ $(function() {
 		if(!eventsLoaded){
    
 		var margin = {top: 20, right: 20, bottom: 30, left: 50},
-		    width = 600 - margin.left - margin.right,
+		    width = width = $("#widgets").width() - margin.left - margin.right,
 		    height = 500 - margin.top - margin.bottom;
 
 		var parseDate = d3.time.format("%Y-%m-%d+02:00").parse;
@@ -35,7 +35,7 @@ $(function() {
         .append("g")
           .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
         
-        d3.json("/persons/getAvardsCount?uri=" + personID, function(error, data) {
+        d3.json(baseUrl + "/persons/getAvardsCount?uri=" + personID, function(error, data) {
         	
         	data = data.results.bindings;
         	

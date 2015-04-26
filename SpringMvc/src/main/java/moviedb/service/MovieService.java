@@ -44,7 +44,6 @@ public class MovieService  extends BaseService implements IMovieService {
     
     public List<Movie> search(String term, int count){
 
-        List<Movie> movies = new ArrayList<Movie>();
     	String query = "PREFIX ns: <http://rdf.freebase.com/ns/> " +
     			"SELECT DISTINCT (?film as ?mid) " +
 				"FROM <http://fmb.org> " +
@@ -195,7 +194,7 @@ public class MovieService  extends BaseService implements IMovieService {
                     if (filmJson.has("revenue")) movie.setRevenue(filmJson.getJSONObject("revenue").getDouble("value"));
                     if (filmJson.has("budget")) movie.setBudget(filmJson.getJSONObject("budget").getDouble("value"));
                     if (filmJson.has("release"))
-                        movie.setReleaseDate(formatter.parse(filmJson.getJSONObject("release").getString("value")));
+                        movie.setReleaseDateGermany(formatter.parse(filmJson.getJSONObject("release").getString("value")));
 
                     if (filmJson.has("companies")) {
                         movie.getCountries().clear();

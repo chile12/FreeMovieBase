@@ -15,7 +15,7 @@ $(function() {
 		})
 		.autocomplete({
 			source: function(request, response) {
-				$.getJSON("/home/search", {
+				$.getJSON(baseUrl + "/home/search", {
 					term: request.term
 				}, response);
 			},
@@ -35,10 +35,10 @@ $(function() {
 				var url;
 				
 				if(ui.item.type == 'person') {
-					url = '/persons/get?uri=';
+					url = baseUrl + '/persons/get?uri=';
 				}
 				else if(ui.item.type == 'movie') {
-					url = '/movies/get?uri=';
+					url = baseUrl + '/movies/get?uri=';
 				}
 				
 				window.location.href = url + ui.item.uri;

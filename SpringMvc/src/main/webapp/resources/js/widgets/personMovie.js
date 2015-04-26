@@ -1,5 +1,6 @@
 var width = 722, 
-	radius = 24;
+	radius = 24,
+	actorRadius = 32;
 
 $(function() {
 	var diagonal = d3.svg.diagonal()
@@ -12,6 +13,10 @@ $(function() {
 		.attr("height", 200)
 		.append("g")
 		.attr("transform", "translate(" + 50 + "," + 0 + ")");
+	
+	var data = {"id":personID,"name":personName,"children":[],"image":imagePath,"type":"actor1"};
+	
+	drawPersonMovieGraphByData(data);
 	
 	$('#widgetLink4').on('click', function (e) {
 		e.preventDefault();
@@ -32,7 +37,7 @@ $(function() {
 
 	function drawPersonMovieGraph(actor1, actor2){
 	
-		$.getJSON("/movies/byActors", { actor1: actor1, actor2: actor2 })
+		$.getJSON(baseUrl + "/movies/byActors", { actor1: actor1, actor2: actor2 })
 			.done(function(data) {
 				
 				drawPersonMovieGraphByData(data);
@@ -42,29 +47,40 @@ $(function() {
 	
 	function drawPersonMovieGraphByData(data){
 		
-		var movieCount = data["children"].length,
+		var movieCount = data["children"].length;
+		
+		var height = 120;
+		
+		if(movieCount > 0){
 			height = movieCount * 65;
+		}
 
 		var tree = d3.layout.cluster()
-			.size([height, width - 100])
+			.size([height, width - 120])
 			.separation(function(a, b) { return (a.parent == b.parent ? 1 : 2) / a.depth - 100; });
 		
 		$("svg").attr("height", height + 10);
 		
 		var nodes = tree.nodes(data).reverse();
 
-		var nodes = tree.nodes(data).reverse();
-
 		var actor1Node = nodes.filter(function(d) { return d['type'] === 'actor1'; })[0];
-		var actor2Node = nodes.filter(function(d) { return d['type'] === 'actor2'; })[0];
-
-		var dummyNodes = nodes.filter(function(d) { return d['type'] === 'dummy'; });
-
-		actor2Node.x = actor1Node.x;
-
-		dummyNodes.forEach(function(node) {
-			node.x = actor1Node.x;
-		});
+		
+		if(movieCount == 0){
+			
+			actor1Node.x = 50;
+			actor1Node.y = 20;
+		}
+		else {
+			var actor2Node = nodes.filter(function(d) { return d['type'] === 'actor2'; })[0];
+	
+			var dummyNodes = nodes.filter(function(d) { return d['type'] === 'dummy'; });
+	
+			actor2Node.x = actor1Node.x;
+	
+			dummyNodes.forEach(function(node) {
+				node.x = actor1Node.x;
+			});
+		}
 
 		var defs = svg.append("defs").attr("id", "imgdefs");
 
@@ -85,34 +101,37 @@ $(function() {
 				.attr("xlink:href", node.image);
 		});
 		
-		var links = tree.links(nodes);
-
-		svg.selectAll('.link').remove();
-
-		var link = svg.selectAll(".link")
-			.data(links)
-			.enter().append("path")
-			.attr("class", "link")
-			.attr("d", diagonal);
-
+		if(movieCount > 0){
+			var links = tree.links(nodes);
+	
+			svg.selectAll('.link').remove();
+	
+			var link = svg.selectAll(".link")
+				.data(links)
+				.enter().append("path")
+				.attr("class", "link")
+				.attr("d", diagonal);
+		}
+		
 		svg.selectAll('.node').remove();
+		svg.selectAll('.actorNode').remove();
 
 		var node = svg.selectAll(".node")
 			.data(nodes)
 			.enter().append("g")
-			.attr("class",  function(d) { return d.name == 'dummy' ? "emptyNode" : "node"; })
+			.attr("class",  function(d) { return (d.type == 'actor1' || d.type == 'actor2') ? "actorNode" : "node"; })
 			.attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; })
 			.on("mouseover", mouseover)
 			.on("mouseout", mouseout)
 			.on("click", nodeClick);
 
 		node.append("circle")
-			.attr("r", radius)
+			.attr("r", function(d) { return (d.type == 'actor1' || d.type == 'actor2') ? actorRadius : radius; })
 			.attr("fill", function(d) { return "url(#" + d.id + ")"; });
 
 		node.append("text")
 			.attr("dx", -30)
-			.attr("dy", 35)
+			.attr("dy", function(d) { return (d.type == 'actor1' || d.type == 'actor2') ? 50 : 30; })
 			.text(function(d) { return d.name; });
 		
 	}
@@ -120,34 +139,34 @@ $(function() {
 	function mouseover(d) {
 	d3.select(this).select("circle").transition()
 		.duration(750)
-		.attr("r", radius + radius/2);
+		.attr("r", function(d) { return (d.type == 'actor1' || d.type == 'actor2') ? actorRadius + actorRadius / 2 : radius + radius / 2; });
 	
 	d3.select(this).select("text").transition()
 		.duration(750)
-		.attr("dy", 60);
+		.attr("dy", function(d) { return (d.type == 'actor1' || d.type == 'actor2') ? 70 : 60; });
 	}
 	
 	function mouseout() {
-	d3.select(this).select("circle").transition()
-		.duration(750)
-		.attr("r", radius);
-	
-	d3.select(this).select("text").transition()
-		.duration(750)
-		.attr("dy", 35);
+		d3.select(this).select("circle").transition()
+			.duration(750)
+			.attr("r", function(d) { return (d.type == 'actor1' || d.type == 'actor2') ? actorRadius : radius; })
+		
+		d3.select(this).select("text").transition()
+			.duration(750)
+			.attr("dy", function(d) { return (d.type == 'actor1' || d.type == 'actor2') ? 50 : 30; });
 	}
 	
 	function nodeClick(d){
 	
-	console.log("Click: " + d.name);
-	
-	/*if(currentData == "data"){
-		update(data2);
-		currentData = "data2";
-	}
-	else {
-		update(data);
-		currentData = "data";
-	}*/
+		console.log("Click: " + d.name);
+		
+		if(d.type == 'actor1' || d.type == 'actor2') {
+			url = 'persons/get?uri=';
+		}
+		else{
+			url = 'movies/get?uri=';
+		}
+		
+		window.location.href = baseUrl + url + d.id;
 	}
 });

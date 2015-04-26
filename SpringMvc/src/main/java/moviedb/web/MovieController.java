@@ -47,7 +47,7 @@ public class MovieController {
     @RequestMapping("")
     public String getMovies(Model model) {
 
-        model.addAttribute("movies", movieService.getMoviesByAward("0g_w", 2012));
+        model.addAttribute("movies", movieService.getMoviesByAward("m.0g_w", 2012));
 
         return "movies";
     }

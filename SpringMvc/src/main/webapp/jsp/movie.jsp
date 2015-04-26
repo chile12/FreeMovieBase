@@ -9,10 +9,18 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
  
 <tiles:insertDefinition name="movieTemplate">
+	<tiles:putAttribute name="stylesheets">
+		<c:forEach items="${widgets}" var="widget">
+			<c:if test="${not empty widget.cssPath}">
+			<link rel="stylesheet" href="<c:url value="${widget.cssPath}" />" />
+			</c:if>
+		</c:forEach>
+	</tiles:putAttribute>
 	<tiles:putAttribute name="scripts">
-
 		<script>
 			var movieID = '${movie.mID}';
+			var movieTitle = '${movie.title}';
+			var imagePath = '${movie.imagePath}';
 		</script>
 		
 		<script src="<c:url value="/resources/js/connectionSearch.js" />" charset="utf-8"></script>
@@ -45,6 +53,7 @@
 			
 				<h2><a href="#" id="widgetLink${widget.id}">${widget.name}</a></h2>
 				<div id="widget${widget.id}" style="display:none">
+					<input type="hidden" value="${widget.acceptedType }" />
 					<c:if test="${not empty widget.jspPath}">
 					<jsp:include page="${widget.jspPath}" />
 					</c:if>
@@ -59,7 +68,7 @@
 	<tiles:putAttribute name="secondaryNav">
 	
 		<div id="connectionSearch" style="position: absolute;">
-			<h2>Connect other persons</h2>
+			<h2>Connect other movies</h2>
 			<input type="text" id="connectionSearchInput" value="Search...">
 			<input type="hidden" id="connectionSearchType" value="" />
 			<div id="connectionSearchResult"></div>

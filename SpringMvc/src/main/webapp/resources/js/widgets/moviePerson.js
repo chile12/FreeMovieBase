@@ -1,5 +1,6 @@
 var width = 722, 
-	radius = 24;
+	radius = 24,
+	movieRadius = 32;
 
 $(function() {
 	var diagonal = d3.svg.diagonal()
@@ -12,6 +13,10 @@ $(function() {
 		.attr("height", 200)
 		.append("g")
 		.attr("transform", "translate(" + 50 + "," + 0 + ")");
+	
+	var data = {"id":movieID,"name":movieTitle,"children":[],"image":imagePath,"type":"movie1"};
+	
+	drawMoviePersonGraphByData(data);
 	
 	$('#widgetLink4').on('click', function (e) {
 		e.preventDefault();
@@ -32,7 +37,7 @@ $(function() {
 
 	function drawMoviePersonGraph(movie1, movie2){
 	
-		$.getJSON("/persons/byMovies", { movie1: movie1, movie2: movie2 })
+		$.getJSON(baseUrl + "/persons/byMovies", { movie1: movie1, movie2: movie2 })
 			.done(function(data) {
 				
 				drawMoviePersonGraphByData(data);
@@ -45,26 +50,38 @@ $(function() {
 		var movieCount = data["children"].length,
 			height = movieCount * 65;
 
+		var height = 120;
+		
+		if(movieCount > 0){
+			height = movieCount * 65;
+		}
+
 		var tree = d3.layout.cluster()
-			.size([height, width - 100])
+			.size([height, width - 120])
 			.separation(function(a, b) { return (a.parent == b.parent ? 1 : 2) / a.depth - 100; });
 		
 		$("svg").attr("height", height + 10);
 		
 		var nodes = tree.nodes(data).reverse();
 
-		var nodes = tree.nodes(data).reverse();
-
-		var actor1Node = nodes.filter(function(d) { return d['type'] === 'movie1'; })[0];
-		var actor2Node = nodes.filter(function(d) { return d['type'] === 'movie2'; })[0];
-
-		var dummyNodes = nodes.filter(function(d) { return d['type'] === 'dummy'; });
-
-		actor2Node.x = actor1Node.x;
-
-		dummyNodes.forEach(function(node) {
-			node.x = actor1Node.x;
-		});
+		var movie1Node = nodes.filter(function(d) { return d['type'] === 'movie1'; })[0];
+		
+		if(movieCount == 0){
+			movie1Node.x = 50;
+			movie1Node.y = 20;
+		}
+		else {
+		
+			var movie2Node = nodes.filter(function(d) { return d['type'] === 'movie2'; })[0];
+	
+			var dummyNodes = nodes.filter(function(d) { return d['type'] === 'dummy'; });
+	
+			movie2Node.x = movie1Node.x;
+	
+			dummyNodes.forEach(function(node) {
+				node.x = movie1Node.x;
+			});
+		}
 
 		var defs = svg.append("defs").attr("id", "imgdefs");
 
@@ -89,65 +106,70 @@ $(function() {
 
 		svg.selectAll('.link').remove();
 
-		var link = svg.selectAll(".link")
-			.data(links)
-			.enter().append("path")
-			.attr("class", "link")
-			.attr("d", diagonal);
+		if(movieCount > 0){
+			var links = tree.links(nodes);
+	
+			svg.selectAll('.link').remove();
+	
+			var link = svg.selectAll(".link")
+				.data(links)
+				.enter().append("path")
+				.attr("class", "link")
+				.attr("d", diagonal);
+		}
 
 		svg.selectAll('.node').remove();
+		svg.selectAll('.movieNode').remove();
 
 		var node = svg.selectAll(".node")
 			.data(nodes)
 			.enter().append("g")
-			.attr("class",  function(d) { return d.name == 'dummy' ? "emptyNode" : "node"; })
+			.attr("class",  function(d) { return (d.type == 'movie1' || d.type == 'movie2') ? "movieNode" : "node"; })
 			.attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; })
 			.on("mouseover", mouseover)
 			.on("mouseout", mouseout)
 			.on("click", nodeClick);
 
 		node.append("circle")
-			.attr("r", radius)
+			.attr("r", function(d) { return (d.type == 'movie1' || d.type == 'movie2') ? movieRadius : radius; })
 			.attr("fill", function(d) { return "url(#" + d.id + ")"; });
 
 		node.append("text")
 			.attr("dx", -30)
-			.attr("dy", 35)
+			.attr("dy", function(d) { return (d.type == 'movie1' || d.type == 'movie2') ? 50 : 30; })
 			.text(function(d) { return d.name; });
 		
 	}
 	
 	function mouseover(d) {
-	d3.select(this).select("circle").transition()
-		.duration(750)
-		.attr("r", radius + radius/2);
-	
-	d3.select(this).select("text").transition()
-		.duration(750)
-		.attr("dy", 60);
-	}
+		d3.select(this).select("circle").transition()
+			.duration(750)
+			.attr("r", function(d) { return (d.type == 'movie1' || d.type == 'movie2') ? movieRadius + movieRadius / 2 : radius + radius / 2; });
+		
+		d3.select(this).select("text").transition()
+			.duration(750)
+			.attr("dy", function(d) { return (d.type == 'movie1' || d.type == 'movie2') ? 70 : 60; });
+		}
 	
 	function mouseout() {
-	d3.select(this).select("circle").transition()
-		.duration(750)
-		.attr("r", radius);
-	
-	d3.select(this).select("text").transition()
-		.duration(750)
-		.attr("dy", 35);
+		d3.select(this).select("circle").transition()
+			.duration(750)
+			.attr("r", function(d) { return (d.type == 'movie1' || d.type == 'movie2') ? movieRadius : radius; })
+		
+		d3.select(this).select("text").transition()
+			.duration(750)
+			.attr("dy", function(d) { return (d.type == 'movie1' || d.type == 'movie2') ? 50 : 30; });
 	}
 	
 	function nodeClick(d){
-	
-	console.log("Click: " + d.name);
-	
-	/*if(currentData == "data"){
-		update(data2);
-		currentData = "data2";
-	}
-	else {
-		update(data);
-		currentData = "data";
-	}*/
+		
+		if(d.type == 'movie1' || d.type == 'movie2') {
+			url = 'movies/get?uri=';
+		}
+		else{
+			url = 'persons/get?uri=';
+		}
+		
+		window.location.href = baseUrl + url + d.id;
 	}
 });

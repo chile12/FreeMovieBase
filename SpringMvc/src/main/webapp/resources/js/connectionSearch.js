@@ -36,12 +36,12 @@ $(function() {
 			
 			if(value.length > 2){
 				
-				var searchUrl = '/home/search';
+				var searchUrl = baseUrl + 'home/search';
 				
 				if($('#connectionSearchType').val() == 'persons'){
-					searchUrl = '/persons/search';
+					searchUrl = baseUrl + 'persons/search';
 				} else if($('#connectionSearchType').val() == 'movies') {
-					searchUrl = '/movies/search';
+					searchUrl = baseUrl + 'movies/search';
 				}
 				
 				$.getJSON(searchUrl, { term: value, count: 6 } )
