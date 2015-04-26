@@ -14,8 +14,10 @@
 		<script src="<c:url value="/resources/js/jquery-1.10.1.min.js" />" charset="utf-8"></script>
 		<script src="<c:url value="/resources/js/jquery-ui.js" />" charset="utf-8"></script>
 		<script src="<c:url value="/resources/js/base.js" />" charset="utf-8"></script>
-		
 		<tiles:insertAttribute name="scripts" ignore="true" />
+		<script>
+			var baseUrl = '<c:url value="/" />';
+		</script>
 	</head>
 	<body>
 		<div class="wrapper row0">

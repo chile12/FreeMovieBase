@@ -35,11 +35,11 @@ public class Movie extends Topic {
         return PersonService.resolveMidList(new ArrayList(actorMap.keySet()));
     }
 
-    public Date getReleaseDate() {
+    public Date getReleaseDateGermany() {
         return releaseDate;
     }
 
-    public void setReleaseDate(Date releaseDate) {
+    public void setReleaseDateGermany(Date releaseDate) {
         this.releaseDate = releaseDate;
     }
 

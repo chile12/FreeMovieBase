@@ -3,7 +3,7 @@ svg {
 }
 
 
-.actorNode {
+.movieNode {
 	font: 14px sans-serif;
 	cursor: pointer;
 	color:red;
@@ -15,7 +15,7 @@ svg {
 	color:#525252;
 }
 
-.actorNode circle {
+.movieNode circle {
 	stroke: red;
 	stroke-width: 2px;
 }
