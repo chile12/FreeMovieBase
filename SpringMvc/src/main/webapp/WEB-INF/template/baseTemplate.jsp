@@ -9,15 +9,15 @@
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
 
     <tiles:insertAttribute name="stylesheets" ignore="true" />
-
+    <script>
+        var baseUrl = '<c:url value="/" />';
+    </script>
     <script src="<c:url value="/resources/js/d3.v3.js" />" charset="utf-8"></script>
     <script src="<c:url value="/resources/js/jquery-1.10.1.min.js" />" charset="utf-8"></script>
     <script src="<c:url value="/resources/js/jquery-ui.js" />" charset="utf-8"></script>
     <script src="<c:url value="/resources/js/base.js" />" charset="utf-8"></script>
     <tiles:insertAttribute name="scripts" ignore="true" />
-    <script>
-        var baseUrl = '<c:url value="/" />';
-    </script>
+
 </head>
 <body>
 <div class="wrapper row0">

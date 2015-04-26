@@ -80,13 +80,13 @@ public class MovieService  extends BaseService implements IMovieService {
         //extracts basic Informations about the movie
         String query = "PREFIX ns: <http://rdf.freebase.com/ns/> \n" +
                 "PREFIX key: <http://rdf.freebase.com/key/> \n" +
-                "SELECT (group_concat(distinct ?f;separator=\",&\") as ?film) ?wikiId ?filmTitle (group_concat(distinct ?website;separator=\",&\") as ?websites) (group_concat(distinct ?country;separator=\",&\") as ?countries) ?series ?tagline (group_concat(distinct ?description;separator=\",&\") as ?descriptions) \n" +
+                "SELECT (group_concat(distinct ?f;separator=\",&\") as ?film) ?wikiId ?filmTitle (group_concat(distinct ?website;separator=\",&\") as ?websites) (group_concat(distinct ?country;separator=\",&\") as ?countries) ?series (group_concat(distinct ?taglin;separator=\",&\") as ?tagline) (group_concat(distinct ?description;separator=\",&\") as ?descriptions) \n" +
                 "FROM <http://fmb.org>\n" +
                 "                WHERE { \n" +
                 "                OPTIONAL{?f ns:type.object.name ?filmTitle. }\n" +
                 "                OPTIONAL{?f  key:wikipedia.en_id ?wikiId. }\n" +
                 "                OPTIONAL{?f  ns:common.topic.official_website ?website.}\n" +
-                "                OPTIONAL{?f ns:film.film.tagline ?tagline.  }\n" +
+                "                OPTIONAL{?f ns:film.film.tagline ?taglin.  }\n" +
                 "                OPTIONAL{?f ns:common.topic.description ?description.  }\n" +
                 "                OPTIONAL{?f ns:film.film.country / ns:type.object.name ?country.  }\n" +
                 "                OPTIONAL{?f ns:film.film.film_series / ns:type.object.name ?series.  }\n" +
@@ -253,6 +253,22 @@ public class MovieService  extends BaseService implements IMovieService {
         } catch (ParseException e) {
             e.printStackTrace();
         }
+    }
+
+    public List<Movie> GetBirthdayChildren()
+    {
+        String query = "PREFIX ns: <http://rdf.freebase.com/ns/> \n" +
+                "PREFIX key: <http://rdf.freebase.com/key/> \n" +
+                "SELECT DISTINCT (?film as ?mid)\n" +
+                "FROM <http://fmb.org>\n" +
+                "WHERE { ?film ns:type.object.type ns:film.film. \n" +
+                "?film ns:film.film.release_date_s / ns:film.film_regional_release_date.release_date ?rd.\n" +
+                "?film ns:award.award_winning_work.awards_won / ns:award.award_honor.award / ns:award.award_category.category_of ns:m.0g_w.\n" +
+                "FILTER( !bif:isNull(xsd:date(?rd)) && ( ?rd >= \"1950-01-01\"^^xsd:dateTime ) && \n" +
+                "bif:dayofmonth(?rd) = bif:dayofmonth(bif:curdate('')) && \n" +
+                "bif:month(?rd) = bif:month(bif:curdate('')))} ";
+
+        return getMovies(evalQueryResult(query));
     }
 
     private void addMovieToCache(Movie mov)

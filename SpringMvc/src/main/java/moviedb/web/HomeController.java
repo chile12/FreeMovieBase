@@ -8,6 +8,7 @@ import moviedb.service.IMovieService;
 import moviedb.service.IPersonService;
 
 import java.util.List;
+import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -31,15 +32,14 @@ public class HomeController {
     @RequestMapping("")
     public String getHome(@RequestParam(value="id", required=false, defaultValue = "0") int id, Model model) {
 
-        List<Person> persons = personService.getPersonsByAward("m.0g_w", 2012);
-        List<Movie> movies = movieService.getMoviesByAward("m.0g_w", 2012);
+        List<Person> persons = personService.getPersonsByAward("m.0g_w", 2013);
+        List<Movie> movies = movieService.getMoviesByAward("m.0g_w", 2013);
 
-        Person birthday = personService.getPerson("m.0c6qh");
-        birthday.getImagePaths().add(0, "http://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Brad_Pitt_Fury_2014.jpg/220px-Brad_Pitt_Fury_2014.jpg");
-
-        Movie currentMovie = movieService.getMovie("m.0cs0tcb");
-        currentMovie.getImagePaths().add(0, "http://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Brad_Pitt_Fury_2014.jpg/220px-Brad_Pitt_Fury_2014.jpg");
-
+        Random rand = new Random();
+        Person birthday = personService.GetBirthdayChildren().get(rand.nextInt(10));
+        personService.LoadAdditionalInformations(birthday);
+        Movie currentMovie = movieService.GetBirthdayChildren().get(rand.nextInt(10));
+        movieService.LoadAdditionalInformations(currentMovie);
         model.addAttribute("persons", persons.subList(0, 4));
         model.addAttribute("movies", movies.subList(0, 4));
         model.addAttribute("birthdayPerson", birthday);

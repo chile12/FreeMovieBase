@@ -7,7 +7,7 @@
         <div class="content">
             <h1>welcome to MovieDB</h1>
             <p>
-                Text Text Text Text
+                Freebase Movie Data
             </p>
         </div>
         <div class="wrapper row2">
@@ -16,27 +16,29 @@
                 <div class="one_half first">
                     <h6>Today's birthday</h6>
                     <div class="one_half first">
-                        <a href="<c:url value="/persons/get?uri=${person.mID}" />">
+                        <a href="<c:url value="/persons/get?uri=${birthdayPerson.mID}" />">
                             <img class="imgl borderedbox inspace-5" style="max-width:200px; max-height:300px" src="<c:url value="${birthdayPerson.imagePath}"/>" alt="" />
                         </a>
                     </div>
                     <div class="one_half">
                         <h6 style="font-size:18px">${birthdayPerson.name}</h6>
                         <p>
-                            born on <fmt:formatDate value="${birthdayPerson.birthday}" pattern="dd.MM.yyyy" /> in ${birthdayPerson.placeOfBirth}
+                            born <fmt:formatDate value="${birthdayPerson.birthday}" pattern="dd.MM.yyyy" /> in ${birthdayPerson.placeOfBirth}
                         </p>
+                        <p>${birthdayPerson.description}</p>
                     </div>
                 </div>
                 <div class="one_half">
-                    <h2>Today's best movie</h2>
+                    <h2>Release Anniversary</h2>
                     <div class="one_half first">
                         <h6 style="font-size:18px">${currentMovie.title}</h6>
                         <p>
-                            released on <fmt:formatDate value="${currentMovie.releaseDate}" pattern="dd.MM.yyyy" />
+                            released <fmt:formatDate value="${currentMovie.releaseDate}" pattern="dd.MM.yyyy" />
                         </p>
+                        <p>${currentMovie.description}</p>
                     </div>
                     <div class="one_half">
-                        <a href="<c:url value="/movies/get?uri=${movie.mID}" />">
+                        <a href="<c:url value="/movies/get?uri=${currentMovie.mID}" />">
                             <img class="imgl borderedbox inspace-5" style="max-width:200px; max-height:300px" src="<c:url value="${currentMovie.imagePath}"/>" alt="" />
                         </a>
                     </div>
