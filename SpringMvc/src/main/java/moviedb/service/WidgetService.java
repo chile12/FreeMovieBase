@@ -36,14 +36,15 @@ public class WidgetService implements IWidgetService {
         Widget w7 = new Widget(7, "Locations");
         w7.setJspPath("/jsp/widgets/worldCountries.jsp");
 
-//        Widget w6 = new Widget(6, "Irgendwas");
-//        w6.setCssPath("/resources/css/widgets/personMovie.css");
-//        w6.setJspPath("/jsp/widgets/moviePerson.jsp");
-//        w6.setScriptPath("/resources/js/widgets/moviePerson.js");
-//        w6.setAcceptedType("movies");
+        Widget w6 = new Widget(6, "Collaborations");
+        w6.setCssPath("/resources/css/widgets/personMovie.css");
+        w6.setJspPath("/jsp/widgets/moviePerson.jsp");
+        w6.setScriptPath("/resources/js/widgets/moviePerson.js");
+        w6.setAcceptedType("movies");
 
         movieWidgets.add(w5);
         movieWidgets.add(w2);
+        movieWidgets.add(w6);
         movieWidgets.add(w7);
     }
 

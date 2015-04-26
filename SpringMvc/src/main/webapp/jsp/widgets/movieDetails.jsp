@@ -8,21 +8,18 @@
 			<td>Runtime</td>
 			<td>${movie.runtime} minutes</td>
 		</tr>
-        <ul>
             <c:if test="${not empty movie.budget}">
                 <tr>
                     <td>Budget</td>
                     <td>${movie.budget}</td>
                 </tr>
             </c:if>
-        </ul>
         <c:if test="${not empty movie.revenue}">
             <tr>
                 <td>Revenue</td>
                 <td>${movie.revenue}</td>
             </tr>
         </c:if>
-        <ul>
             <c:if test="${not empty movie.genres}">
                 <tr>
                     <td>Genres</td>
@@ -35,10 +32,9 @@
                     </td>
                 </tr>
             </c:if>
-        </ul>
 		<tr>
 			<td>Released</td>
-            <td><fmt:formatDate value="${movie.releaseDate}" pattern="dd.MM.yyyy" /></td>
+            <td><fmt:formatDate value="${movie.releaseDateGermany}" pattern="dd.MM.yyyy" /></td>
 		</tr>
         <tr>
             <td>Actors</td>
@@ -50,7 +46,6 @@
                 </ul>
             </td>
         </tr>
-        <ul>
             <c:if test="${not empty movie.countries}">
             <tr>
                 <td>Countries</td>
@@ -63,8 +58,6 @@
                 </td>
             </tr>
             </c:if>
-        </ul>
-        <ul>
             <c:if test="${not empty movie.companies}">
                 <tr>
                     <td>Production Companies</td>
@@ -77,6 +70,5 @@
                     </td>
                 </tr>
             </c:if>
-        </ul>
 	</tbody>
 </table>

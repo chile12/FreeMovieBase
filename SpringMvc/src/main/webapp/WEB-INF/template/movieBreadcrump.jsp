@@ -3,5 +3,5 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <li><a href="<c:url value="/home" />">Home</a></li>
-<li><a href="<c:url value="/movies" />">Filme</a></li>
+<li><a href="<c:url value="/movies" />">Movies</a></li>
 <tiles:insertAttribute name="lastBreadcrump" ignore="true" />

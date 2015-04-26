@@ -1,36 +1,41 @@
-<script src="http://d3js.org/d3.v3.min.js"></script>
-<script src="http://d3js.org/topojson.v1.min.js"></script>
-<script src="http://datamaps.github.io/scripts/datamaps.world.min.js"></script>
-<script src="http://datamaps.github.io/scripts/topojson.js"></script>
-<div id="container" style="position: relative; width: 500px; height: 300px;"></div>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
+<script src="<c:url value="/resources/js/topojson.v1.min.js" />"></script>
+<script src="<c:url value="/resources/js/datamaps.world.min.js" />"></script>
+<script src="<c:url value="/resources/js/topojson.js" />"></script>
+<div id="movieMap"></div>
 <script>
-    var data;
+
+	$(function() {
+		
+		var width = $("#widgets").width();
+		
+	    $('#movieMap > svg').attr("width", width)
+							.attr("height", 350);
+	});
 
     var map = new Datamap({
-        element: document.getElementById('container'),
+    	width: width,
+    	height: 350,
+        element: document.getElementById('movieMap'),
         fills: {
-            HIGH: '#afafaf',
-            LOW: '#123456',
-            MEDIUM: 'blue',
-            UNKNOWN: '#FFFFFF',
-            defaultFill: 'green'
+            MEDIUM: '#56AED4',
+            defaultFill: '#888888'
+        },
+        data: {
+            "RUS": {
+                "fillKey": "MEDIUM"
+            }
         },
         geographyConfig: {
             popupTemplate: function(geo, data) {
-                console.log(data)
                 return ['<div class="hoverinfo"><strong>',
-                    'Number of things in ' + geo.properties.name,
-                    ': ' + data[geo.id].numberOfThings,
-                    '</strong></div>'].join('');
+                        geo.properties.name,
+                        '</strong></div>'].join('');
             }
         }
     });
-    map.legend();
-
-
-    d3.json("path/to/data.json", function(error, json) {
-        data =
-        map.updateChoropleth(data);
-    });
+    
+    
+    
 </script>

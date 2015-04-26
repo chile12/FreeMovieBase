@@ -35,10 +35,8 @@ public class HomeController {
         List<Movie> movies = movieService.getMoviesByAward("m.0g_w", 2012);
 
         Person birthday = personService.getPerson("m.0c6qh");
-        birthday.getImagePaths().add(0, "http://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Brad_Pitt_Fury_2014.jpg/220px-Brad_Pitt_Fury_2014.jpg");
         
         Movie currentMovie = movieService.getMovie("m.0cs0tcb");
-        currentMovie.getImagePaths().add(0, "http://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Brad_Pitt_Fury_2014.jpg/220px-Brad_Pitt_Fury_2014.jpg");
         
         model.addAttribute("persons", persons.subList(0, 4));
         model.addAttribute("movies", movies.subList(0, 4));

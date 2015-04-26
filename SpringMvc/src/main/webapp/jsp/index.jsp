@@ -7,7 +7,7 @@
 	<div class="content">
 		<h1>welcome to MovieDB</h1>
 		<p>
-		Text Text Text Text
+		Facts about movies, actors and so on.
 		</p>
 	</div>
 		<div class="wrapper row2">
