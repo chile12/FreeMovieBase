@@ -131,7 +131,7 @@ $(function() {
 
 		node.append("text")
 			.attr("dx", -30)
-			.attr("dy", function(d) { return (d.type == 'actor1' || d.type == 'actor2') ? 50 : 30; })
+			.attr("dy", function(d) { return (d.type == 'actor1' || d.type == 'actor2') ? 50 : 35; })
 			.text(function(d) { return d.name; });
 		
 	}
@@ -153,7 +153,7 @@ $(function() {
 		
 		d3.select(this).select("text").transition()
 			.duration(750)
-			.attr("dy", function(d) { return (d.type == 'actor1' || d.type == 'actor2') ? 50 : 30; });
+			.attr("dy", function(d) { return (d.type == 'actor1' || d.type == 'actor2') ? 50 : 35; });
 	}
 	
 	function nodeClick(d){

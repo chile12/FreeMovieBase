@@ -10,9 +10,11 @@ import java.util.List;
 
 import moviedb.domain.Movie;
 import moviedb.domain.Person;
+import moviedb.service.BaseService;
 import moviedb.service.IMovieService;
 import moviedb.service.IPersonService;
 import moviedb.service.IWidgetService;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -165,5 +167,42 @@ public class PersonController {
         }
 
         return new ResponseEntity<String>(arr.toString(), headers, HttpStatus.OK);
+    }
+    
+    @RequestMapping(value = "/getImages")
+    public ResponseEntity<String> getImages(@RequestParam(value="uris", required=true) String uris, @RequestParam(value="count", defaultValue="0") int count) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
+        
+        JSONArray arr = new JSONArray(uris);
+        
+        JSONArray images = new JSONArray();
+        
+        for(int i = 0; i< arr.length();i++){
+        	String id = arr.getString(i);
+        	
+        	Person p = new Person();
+        	
+        	p.setmID(id);
+        	
+        	List<String> lis = BaseService.getImageUrls(p, true);
+        	
+    		JSONObject obj = new JSONObject();
+    		
+    		obj.put("id", id);
+    		
+    		if(lis.size() == 0){
+    			
+        		obj.put("image", "/resources/images/gallery.gif");
+        	}
+    		else {
+    			String image = lis.get(0);
+    			obj.put("image", image);
+    		}
+    		
+    		images.put(obj);
+        }
+        
+        return new ResponseEntity<String>(images.toString(), headers, HttpStatus.OK);
     }
 }
