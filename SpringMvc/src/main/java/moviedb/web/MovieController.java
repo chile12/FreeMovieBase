@@ -1,6 +1,7 @@
 package moviedb.web;
 import javax.servlet.http.HttpServletRequest;
 
+import moviedb.service.PersonService;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import moviedb.domain.Movie;
@@ -37,7 +38,6 @@ public class MovieController {
 
         Movie movie = movieService.getMovie(uri);
         movieService.LoadAdditionalInformations(movie);
-        movie.setActors(personService.resolveMidList(movie.getActorMids()));
         model.addAttribute("item", movie);
         model.addAttribute("movie", movie);
         model.addAttribute("widgets", widgetService.getMovieWidgets());

@@ -175,7 +175,7 @@ public abstract class BaseService implements ServletContextAware {
         return mids;
     }
 	
-	protected JSONArray getJSONArray(String query) throws IOException{
+	protected static JSONArray getJSONArray(String query) throws IOException{
 		
 		query = URLEncoder.encode(query, "UTF-8");
 		

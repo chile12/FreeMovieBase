@@ -19,6 +19,4 @@ public interface IPersonService {
     public List<Person> getPersonByMovies(String uriMovie1, String uriMovie2);
 
     public void LoadAdditionalInformations(Person person);
-
-    public List<Person> resolveMidList(List<String> mids);
 }

@@ -1,12 +1,11 @@
 package moviedb.domain;
 
+import moviedb.service.PersonService;
+
 import java.util.*;
 
 public class Movie extends Topic {
-	
-	public Movie(){
-		
-	}
+
 	private Date releaseDate;
     private String tagline;
     private String series;
@@ -15,10 +14,13 @@ public class Movie extends Topic {
     private Double revenue;
 
     private Map<String, String> actorMap = new HashMap<String, String>();
-    List<Person> actors = new ArrayList<Person>();
     private List<String> genres = new ArrayList<String>();
     private List<String> companies = new ArrayList<String>();
 	private List<String> countries = new ArrayList<String>();
+
+    private List<String> writers = new ArrayList<String>();
+    private List<String> producers = new ArrayList<String>();
+    private List<String> directors = new ArrayList<String>();
 
     public List<String> getActorMids() {
         return new ArrayList<String>(actorMap.keySet());
@@ -26,15 +28,11 @@ public class Movie extends Topic {
 
     public void addActor(String uri, String CharcterName)
     {
-        actorMap.put(uri.substring(uri.lastIndexOf("/") + 1), CharcterName);
+        actorMap.put(uri, CharcterName);
     }
 
     public List<Person> getActors() {
-        return actors;
-    }
-
-    public void setActors(List<Person> actors) {
-        this.actors = actors;
+        return PersonService.resolveMidList(new ArrayList(actorMap.keySet()));
     }
 
     public Date getReleaseDate() {
@@ -109,4 +107,30 @@ public class Movie extends Topic {
         this.countries = countries;
     }
 
+    public List<Person> getWriters() {
+        return PersonService.resolveMidList(writers);
+    }
+
+    public void addWriter(String mid)
+    {
+        writers.add(mid);
+    }
+
+    public List<Person> getProducers() {
+        return PersonService.resolveMidList(producers);
+    }
+
+    public void addProducer(String mid)
+    {
+        producers.add(mid);
+    }
+
+    public List<Person> getDirectors() {
+        return PersonService.resolveMidList(directors);
+    }
+
+    public void addDirector(String mid)
+    {
+        directors.add(mid);
+    }
 }

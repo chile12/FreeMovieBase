@@ -32,11 +32,6 @@ public class Person extends Topic {
         Female
     }
 
-	public Person(PersonService service) {
-		this.service = service;
-	}
-
-    private PersonService service;
     private Date birthday;
     private Date deathday;
     private Sex gender;
@@ -163,20 +158,20 @@ public class Person extends Topic {
     }
 
     public List<Person> getParents() {
-        return service.resolveMidList(parents);
+        return PersonService.resolveMidList(parents);
     }
 
     public void addParent(String mid){parents.add(mid);}
 
     public List<Person> getChildren() {
-        return service.resolveMidList(children);
+        return PersonService.resolveMidList(children);
     }
 
     public void addChild(String mid){children.add(mid);}
 
     public List<Merriage> getMerriages() {
         if(merrs == null)
-            merrs = service.createMerriages(this, merriages);
+            merrs = PersonService.createMerriages(this, merriages);
         return merrs;
     }
 
@@ -195,7 +190,7 @@ public class Person extends Topic {
     }
 
     public List<Person> getSiblings() {
-        return service.resolveMidList(siblings);
+        return PersonService.resolveMidList(siblings);
     }
 
     public void addSibling(String mid)

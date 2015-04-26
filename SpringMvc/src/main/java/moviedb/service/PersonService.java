@@ -22,7 +22,7 @@ import java.util.*;
  */
 public class PersonService extends BaseService implements IPersonService {
 
-    private Map<String, Person> personCache = new HashMap<String, Person>();
+    private static Map<String, Person> personCache = new HashMap<String, Person>();
 
     public Person getPerson(String mid){
         List<Person> movs = getPersons(Arrays.asList(mid));
@@ -64,7 +64,7 @@ public class PersonService extends BaseService implements IPersonService {
         return getPersons(evalQueryResult(query));
     }
     
-    private List<Person> getPersons(List<String> mids){
+    private static  List<Person> getPersons(List<String> mids){
     	List<Person> persons = new ArrayList<Person>();
         //extracts basic Informations about the person
         String query = "PREFIX ns: <http://rdf.freebase.com/ns/> \n" +
@@ -106,14 +106,14 @@ public class PersonService extends BaseService implements IPersonService {
     	return persons;
     }
     
-    private Person createPerson(JSONObject json){
+    private static Person createPerson(JSONObject json){
         String mID = json.getJSONObject("person").getString("value");
         mID = mID.replace("http://rdf.freebase.com/ns/", "");
 
         if(personCache.keySet().contains(mID))
             return personCache.get(mID);
 
-        Person person = new Person(this);
+        Person person = new Person();
         person.setmID(mID);
 
         if(json.has("name")) person.setTitle(json.getJSONObject("name").getString("value"));
@@ -152,7 +152,7 @@ public class PersonService extends BaseService implements IPersonService {
                 person.addProfession(Person.Profession.valueOf(c));
             }
         }
-        addPersonToCache(person);
+        PersonService.addPersonToCache(person);
         return person;
     }
 	
@@ -180,7 +180,7 @@ public class PersonService extends BaseService implements IPersonService {
 		return getResponse(BaseService.baseFreebaseQueryUrl + query);
 	}
 
-    public List<Merriage> createMerriages(Person sp1, List<String> mids)
+    public static List<Merriage> createMerriages(Person sp1, List<String> mids)
     {
         List<Merriage> merriages = new ArrayList<Merriage>();
         String query = "PREFIX ns: <http://rdf.freebase.com/ns/> \n" +
@@ -356,7 +356,7 @@ public class PersonService extends BaseService implements IPersonService {
         }
     }
 
-    public List<Person> resolveMidList(List<String> mids)
+    public static List<Person> resolveMidList(List<String> mids)
     {
         List<Person> actors = new LinkedList<Person>();
         actors.addAll(getPersons(mids));
@@ -383,7 +383,7 @@ public class PersonService extends BaseService implements IPersonService {
 
 
 
-    private void addPersonToCache(Person mov)
+    private static void addPersonToCache(Person mov)
     {
         if(!personCache.keySet().contains(mov.getmID()))  //not!!
             personCache.put(mov.getmID(), mov);

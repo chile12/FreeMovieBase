@@ -12,14 +12,14 @@ public class WidgetService implements IWidgetService {
         Widget w1 = new Widget(1, "Details");
         w1.setJspPath("/jsp/widgets/personDetails.jsp");
 
-        Widget w2 = new Widget(2, "Bilder");
+        Widget w2 = new Widget(2, "Pictures");
         w2.setJspPath("/jsp/widgets/images.jsp");
 
         Widget w3 = new Widget(3, "Awards");
         w3.setCssPath("/resources/css/widgets/personAwards.css");
         w3.setScriptPath("/resources/js/widgets/personAwards.js");
 
-        Widget w4 = new Widget(4, "Filme mit anderen Schauspielern");
+        Widget w4 = new Widget(4, "Collaborations");
         w4.setCssPath("/resources/css/widgets/personMovie.css");
         w4.setJspPath("/jsp/widgets/personMovie.jsp");
         w4.setScriptPath("/resources/js/widgets/personMovie.js");
@@ -33,15 +33,18 @@ public class WidgetService implements IWidgetService {
         Widget w5 = new Widget(5, "Details");
         w5.setJspPath("/jsp/widgets/movieDetails.jsp");
 
-        Widget w6 = new Widget(6, "Irgendwas");
-        w6.setCssPath("/resources/css/widgets/personMovie.css");
-        w6.setJspPath("/jsp/widgets/moviePerson.jsp");
-        w6.setScriptPath("/resources/js/widgets/moviePerson.js");
-        w6.setAcceptedType("movies");
+        Widget w7 = new Widget(7, "Locations");
+        w7.setJspPath("/jsp/widgets/worldCountries.jsp");
+
+//        Widget w6 = new Widget(6, "Irgendwas");
+//        w6.setCssPath("/resources/css/widgets/personMovie.css");
+//        w6.setJspPath("/jsp/widgets/moviePerson.jsp");
+//        w6.setScriptPath("/resources/js/widgets/moviePerson.js");
+//        w6.setAcceptedType("movies");
 
         movieWidgets.add(w5);
         movieWidgets.add(w2);
-        movieWidgets.add(w6);
+        movieWidgets.add(w7);
     }
 
     private List<Widget> personWidgets = new ArrayList<Widget>();

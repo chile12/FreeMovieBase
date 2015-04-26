@@ -171,11 +171,19 @@ public class MovieService  extends BaseService implements IMovieService {
         //extracts additional Informations about the movie
         String query = "PREFIX ns: <http://rdf.freebase.com/ns/> \n" +
                 "PREFIX key: <http://rdf.freebase.com/key/> \n" +
-                "SELECT DISTINCT (group_concat(distinct ?comp;separator=\",&\") as ?companies) (group_concat(distinct ?genre;separator=\",&\") as ?genres) (MIN(?run) as ?runtime) ?revenue ?budget (MIN(?rel) as ?release) ?starr ?actor ?character\n" +
+                "SELECT DISTINCT (group_concat(distinct ?comp;separator=\",&\") as ?companies) (group_concat(distinct ?genre;separator=\",&\") as ?genres) (MIN(?run) as ?runtime) ?revenue ?budget (MIN(?rel) as ?release)\n" +
+                "(group_concat(distinct (bif:subseq(str(?actor), bif:strrchr(str(?actor), '/')+1));separator=\",&\") as ?actors)\n" +
+                "(group_concat(distinct (bif:subseq(str(?director), bif:strrchr(str(?director), '/')+1));separator=\",&\") as ?directors)\n" +
+                "(group_concat(distinct (bif:subseq(str(?producer), bif:strrchr(str(?producer), '/')+1));separator=\",&\") as ?producers)\n" +
+                "(group_concat(distinct (bif:subseq(str(?writer), bif:strrchr(str(?writer), '/')+1));separator=\",&\") as ?writers)\n" +
                 "FROM <http://fmb.org>\n" +
                 "WHERE { ?film ns:film.film.starring ?starr.\n" +
                 "                ?starr ns:film.performance.actor ?actor.\n" +
-                "                OPTIONAL{?starr ns:film.performance.character / ns:type.object.name ?character.}\n" +
+                "                  OPTIONAL{?film ns:film.film.directed_by ?director}                  \n" +
+                "OPTIONAL{?film ns:film.film.produced_by ?producer}                  \n" +
+                "OPTIONAL{?film ns:film.film.written_by ?writer}                  \n" +
+                "OPTIONAL{?film ns:film.film.executive_produced_by ?producer}                \n" +
+                "OPTIONAL{?starr ns:film.performance.character / ns:type.object.name ?character.}\n" +
                 "                OPTIONAL{?film ns:film.film.production_companies / ns:type.object.name ?comp. }\n" +
                 "                OPTIONAL{?film ns:film.film.genre / ns:type.object.name ?genre.  }\n" +
                 "                OPTIONAL{?film ns:film.film.runtime / ns:film.film_cut.runtime ?run. }\n" +
@@ -183,7 +191,7 @@ public class MovieService  extends BaseService implements IMovieService {
                 "                OPTIONAL{?film ns:film.film.estimated_budget / ns:measurement_unit.dated_money_value.amount ?budget. }\n" +
                 "                OPTIONAL{?film ns:film.film.release_date_s / ns:film.film_regional_release_date.release_date ?rel. }\n" +
                 "FILTER ( ?film  = ns:%s)} \n" +
-                "GROUP BY ?companies ?genres ?runtime ?revenue ?budget ?release ?actor ?character ?starr";
+                "GROUP BY ?companies ?genres ?runtime ?revenue ?budget ?release";
         query = String.format(query, movie.getmID());
 
         try {
@@ -211,11 +219,31 @@ public class MovieService  extends BaseService implements IMovieService {
                             movie.getGenres().add(c);
                         }
                     }
+                    if (filmJson.has("actors")) {
+                        movie.getActors().clear();
+                        for (String c : filmJson.getJSONObject("actors").getString("value").split(",\\&")) {
+                            movie.addActor(c, null);
+                        }
+                    }
+                    if (filmJson.has("directors")) {
+                        movie.getDirectors().clear();
+                        for (String c : filmJson.getJSONObject("directors").getString("value").split(",\\&")) {
+                            movie.addDirector(c);
+                        }
+                    }
+                    if (filmJson.has("producers")) {
+                        movie.getCountries().clear();
+                        for (String c : filmJson.getJSONObject("producers").getString("value").split(",\\&")) {
+                            movie.addProducer(c);
+                        }
+                    }
+                    if (filmJson.has("writers")) {
+                        movie.getCountries().clear();
+                        for (String c : filmJson.getJSONObject("writers").getString("value").split(",\\&")) {
+                            movie.addWriter(c);
+                        }
+                    }
                 }
-                if (filmJson.has("character"))
-                    movie.addActor(filmJson.getJSONObject("actor").getString("value"), filmJson.getJSONObject("character").getString("value"));
-                else
-                    movie.addActor(filmJson.getJSONObject("actor").getString("value"), null);
             }
 
         } catch (UnsupportedEncodingException e) {
