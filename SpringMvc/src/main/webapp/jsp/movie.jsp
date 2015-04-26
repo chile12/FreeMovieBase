@@ -31,15 +31,20 @@
 
     <tiles:putAttribute name="body">
     
-    <div class="content three_quarter first"> 
-		<h1><c:out value="${movie.title}"/></h1>
-		<div class="group">
-			<img class="imgl borderedbox inspace-5" src="<c:url value="${movie.imagePath}"/>" alt="" />
-			<p>
-				<c:out value="${movie.description}"/>
-			</p>
-		</div>
-		
+    <div class="content three_quarter first">
+        <h1><c:out value="${movie.title}"/></h1>
+        <div class="group">
+            <img class="imgl borderedbox inspace-5" style="max-width:200px; max-height:300px" src="<c:url value="${movie.imagePath}"/>" alt="" />
+            <p>
+                <c:out value="${movie.description}"/>
+            </p>
+        </div>
+        <ul>
+            <c:if test="${not empty movie.website}">
+                <c:out value="Official Website:"/>
+                <a href="${movie.website}">${movie.website}</a>
+            </c:if>
+        </ul>
 		<div class="group" id="widgets">
 			<c:forEach items="${widgets}" var="widget">
 			

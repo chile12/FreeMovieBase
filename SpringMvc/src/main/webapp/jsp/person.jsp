@@ -46,7 +46,12 @@
 				<c:out value="${person.description}"/>
 			</p>
 		</div>
-
+        <ul>
+            <c:if test="${not empty person.website}">
+                <c:out value="Official Website:"/>
+                <a href="${person.website}">${person.website}</a>
+            </c:if>
+        </ul>
 		<div class="group" id="widgets">
 			<c:forEach items="${widgets}" var="widget">
 			

@@ -31,14 +31,14 @@
 						<article class="service">
 							<h2 class="heading">Filme</h2>
 							<p class="btmspace-10">Soooo viele Filme haben wir im Index!!</p>
-							<p><a href="<c:url value="/movies" />">Read More �</a></p>
+							<p><a href="<c:url value="/movies/" />">Read More</a></p>
 						</article>
 					</div>
 					<div class="one_third">
 						<article class="service">
 							<h2 class="heading">Schauspieler</h2>
 							<p class="btmspace-10">Soooo viele Schauspieler haben wir im Index!!</p>
-							<p><a href="<c:url value="/persons" />">Read More �</a></p>
+							<p><a href="<c:url value="/persons/" />">Read More</a></p>
 						</article>
 					</div>
 					<div class="one_third">

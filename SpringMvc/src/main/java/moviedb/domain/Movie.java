@@ -14,16 +14,26 @@ public class Movie extends Topic {
     private Double budget;
     private Double revenue;
 
-    private Map<String, String> actors = new HashMap<String, String>();
+    private Map<String, String> actorMap = new HashMap<String, String>();
+    List<Person> actors = new ArrayList<Person>();
     private List<String> genres = new ArrayList<String>();
     private List<String> companies = new ArrayList<String>();
 	private List<String> countries = new ArrayList<String>();
 
-    public Map<String, String> getActors() {
+    public List<String> getActorMids() {
+        return new ArrayList<String>(actorMap.keySet());
+    }
+
+    public void addActor(String uri, String CharcterName)
+    {
+        actorMap.put(uri.substring(uri.lastIndexOf("/") + 1), CharcterName);
+    }
+
+    public List<Person> getActors() {
         return actors;
     }
 
-    public void setActors(Map<String, String> actors) {
+    public void setActors(List<Person> actors) {
         this.actors = actors;
     }
 
@@ -59,16 +69,16 @@ public class Movie extends Topic {
         this.runtime = runtime;
     }
 
-    public Double getBudget() {
-        return budget;
+    public String getBudget() {
+        return String.format("%.2f", budget);
     }
 
     public void setBudget(Double budget) {
         this.budget = budget;
     }
 
-    public Double getRevenue() {
-        return revenue;
+    public String getRevenue() {
+        return String.format( "%.2f", revenue );
     }
 
     public void setRevenue(Double revenue) {
@@ -98,4 +108,5 @@ public class Movie extends Topic {
     public void setCountries(List<String> countries) {
         this.countries = countries;
     }
+
 }

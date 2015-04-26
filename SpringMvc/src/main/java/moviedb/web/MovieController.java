@@ -36,7 +36,8 @@ public class MovieController {
     public String getMovie(@RequestParam(value="uri", required=true) String uri, HttpServletRequest request, Model model) {
 
         Movie movie = movieService.getMovie(uri);
-
+        movieService.LoadAdditionalInformations(movie);
+        movie.setActors(personService.resolveMidList(movie.getActorMids()));
         model.addAttribute("item", movie);
         model.addAttribute("movie", movie);
         model.addAttribute("widgets", widgetService.getMovieWidgets());
@@ -47,7 +48,7 @@ public class MovieController {
     @RequestMapping("")
     public String getMovies(Model model) {
 
-        model.addAttribute("movies", movieService.getMoviesByAward("0g_w", 2012));
+        model.addAttribute("movies", movieService.getMoviesByAward("m.0g_w", 2013));
 
         return "movies";
     }
