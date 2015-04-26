@@ -35,13 +35,14 @@ public abstract class BaseService implements ServletContextAware {
 	private static ServletContext servletContext;
     static String baseFreebaseQueryUrl = "http://vmdbpedia.informatik.uni-leipzig.de:8890/sparql?format=json&query=";
     static String baseWikipediaQueryUrl = "http://dbpedia.org/sparql/default-graph-uri=http%3A%2F%2Fdbpedia.org?format=json&query=";
+    static String baseWikipediaImageUrl = "http://en.wikipedia.org/w/api.php?action=query&pageids=%s&prop=pageimages&format=json&pithumbsize=333";
     private static String relativeEntitiesPath = "/resources/images/";
 
 	public static List<String> getImageUrls(Topic top, boolean all){
 		
 		List<String> urls = new ArrayList<String>();
-        urls.addAll(getFreebaseImgUrl(top.getmID()));
-        urls.removeAll(Collections.singleton(null));
+        //urls.addAll(getFreebaseImgUrl(top.getmID()));
+        //urls.removeAll(Collections.singleton(null));
         if(all || urls.size() == 0) {
             try {
                 urls.add(getWikipediaImg(top.getWikiID()));
@@ -88,47 +89,22 @@ public abstract class BaseService implements ServletContextAware {
     private static String getWikipediaImg(String pageId) throws UnsupportedEncodingException, JSONException {
         if(pageId == null)
             return null;
-            String query = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
-                    "PREFIX dbpedia: <http://dbpedia.org/ontology/>\n" +
-                    "Select ?page ?imgurl\n" +
-                    "FROM <http://dbpedia.org>\n" +
-                    "WHERE{\n" +
-                    "?page dbpedia:wikiPageID %s.\n" +
-                    "OPTIONAL{?page foaf:depiction ?imgurl}}";
-        query = baseWikipediaQueryUrl + URLEncoder.encode(String.format(query, pageId), "UTF-8");
+        String url = String.format(baseWikipediaImageUrl, pageId);
 
         String resultString = null;
+        String imgUrl = null;
         try {
-            resultString = getResponse(query);
-
-        } catch (IOException e) {
+            resultString = getResponse(url);
+            imgUrl = new JSONObject(resultString)
+                    .getJSONObject("query")
+                    .getJSONObject("pages")
+                    .getJSONObject(pageId)
+                    .getJSONObject("thumbnail")
+                    .getString("source");
+        } catch (Exception e) {
             e.printStackTrace();
         }
-
-            JSONArray arr = null;
-
-            if (resultString != null)
-                arr = new JSONObject(resultString).getJSONObject("results").getJSONArray("bindings");
-
-        if (resultString == null || arr == null || arr.length() == 0) {
-                try {
-                    resultString = getResponse(query.replace("commons", "en"));
-
-                    if (resultString != null)
-                        arr = new JSONObject(resultString).getJSONObject("results").getJSONArray("bindings");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (arr == null || arr.length() == 0)
-                return null;
-
-        if(arr.getJSONObject(0).has("imgurl")) {
-            String url = arr.getJSONObject(0).getJSONObject("imgurl").getString("value");
-            url = cacheImage(url);
-            return url;
-        }
-        return null;
+        return imgUrl;
     }
 	
 	private static String cacheImage(String url){

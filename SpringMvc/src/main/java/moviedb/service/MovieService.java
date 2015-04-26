@@ -50,7 +50,6 @@ public class MovieService  extends BaseService implements IMovieService {
 				"WHERE { " +
 				"?film ns:type.object.type ns:film.film. " +
 				"FILTER (REGEX(STR(?filmTitle), \"%s\", \"i\"))}" +
-				"ORDER BY (?filmTitle) " +
 				"LIMIT " + count;
     	
     	query = String.format(query, term);

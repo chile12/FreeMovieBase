@@ -58,7 +58,6 @@ public class PersonService extends BaseService implements IPersonService {
 				"?actor ns:type.object.type ns:film.actor. " +
 				"?actor ns:type.object.name ?actorName. " +
 				"FILTER (REGEX(STR(?actorName), \"%s\", \"i\"))}" +
-				"ORDER BY (?actorName) " +
 				"LIMIT " + count;
     	query = String.format(query, term);
         return getPersons(evalQueryResult(query));
