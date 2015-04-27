@@ -38,10 +38,18 @@ public class HomeController {
         List<Person> persons = personService.getPersonsByAward("m.0g_w", 2013);
         List<Movie> movies = movieService.getMoviesByAward("m.0g_w", 2013);
 
-        Random rand = new Random();
-        Person birthday = personService.GetBirthdayChildren().get(rand.nextInt(10));
+        List<Person> bds = personService.GetBirthdayChildren();
+        Person birthday = null;
+        for(int i =0; i < 10; i++)
+            if(bds.get(i).getImagePaths().size() > 0)
+                birthday = bds.get(i);
         personService.LoadAdditionalInformations(birthday);
-        Movie currentMovie = movieService.GetBirthdayChildren().get(rand.nextInt(10));
+
+        List<Movie> mds = movieService.GetBirthdayChildren();
+        Movie currentMovie = mds.get(0);
+        for(int i =1; i < 10; i++)
+            if(currentMovie.getImagePaths().size() > 0)
+                currentMovie = mds.get(i);
         movieService.LoadAdditionalInformations(currentMovie);
 
         model.addAttribute("persons", persons.subList(0, 4));

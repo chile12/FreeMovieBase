@@ -20,9 +20,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  *
@@ -31,16 +29,15 @@ import java.util.List;
 public abstract class BaseService implements ServletContextAware {
 
     static DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-	private static ServletContext servletContext;
+    private static ServletContext servletContext;
     static String baseFreebaseQueryUrl = "http://vmdbpedia.informatik.uni-leipzig.de:8890/sparql?format=json&query=";
     static String baseWikipediaQueryUrl = "http://dbpedia.org/sparql/default-graph-uri=http%3A%2F%2Fdbpedia.org?format=json&query=";
+    static String baseWikipediaImageUrl = "http://en.wikipedia.org/w/api.php?action=query&pageids=%s&prop=pageimages&format=json&pithumbsize=333";
     private static String relativeEntitiesPath = "/resources/images/";
 
-	public static List<String> getImageUrls(Topic top, boolean all){
-		
-		List<String> urls = new ArrayList<String>();
-        urls.addAll(getFreebaseImgUrl(top.getmID()));
-        urls.removeAll(Collections.singleton(null));
+    public static List<String> getImageUrls(Topic top, boolean all){
+
+        List<String> urls = new ArrayList<String>();
         if(all || urls.size() == 0) {
             try {
                 urls.add(getWikipediaImg(top.getWikiID()));
@@ -54,8 +51,8 @@ public abstract class BaseService implements ServletContextAware {
             if(all)
                 top.setQueriedForImages(true);
         }
-		return urls;
-	}
+        return urls;
+    }
 
     private static  List<String> getFreebaseImgUrl(String id)
     {
@@ -87,76 +84,51 @@ public abstract class BaseService implements ServletContextAware {
     private static String getWikipediaImg(String pageId) throws UnsupportedEncodingException, JSONException {
         if(pageId == null)
             return null;
-            String query = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
-                    "PREFIX dbpedia: <http://dbpedia.org/ontology/>\n" +
-                    "Select ?page ?imgurl\n" +
-                    "FROM <http://dbpedia.org>\n" +
-                    "WHERE{\n" +
-                    "?page dbpedia:wikiPageID %s.\n" +
-                    "OPTIONAL{?page foaf:depiction ?imgurl}}";
-        query = baseWikipediaQueryUrl + URLEncoder.encode(String.format(query, pageId), "UTF-8");
+        String url = String.format(baseWikipediaImageUrl, pageId);
 
         String resultString = null;
+        String imgUrl = null;
         try {
-            resultString = getResponse(query);
-
-        } catch (IOException e) {
+            resultString = getResponse(url);
+            imgUrl = new JSONObject(resultString)
+                    .getJSONObject("query")
+                    .getJSONObject("pages")
+                    .getJSONObject(pageId)
+                    .getJSONObject("thumbnail")
+                    .getString("source");
+        } catch (Exception e) {
             e.printStackTrace();
         }
-
-            JSONArray arr = null;
-
-            if (resultString != null)
-                arr = new JSONObject(resultString).getJSONObject("results").getJSONArray("bindings");
-
-        if (resultString == null || arr == null || arr.length() == 0) {
-                try {
-                    resultString = getResponse(query.replace("commons", "en"));
-
-                    if (resultString != null)
-                        arr = new JSONObject(resultString).getJSONObject("results").getJSONArray("bindings");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (arr == null || arr.length() == 0)
-                return null;
-
-        if(arr.getJSONObject(0).has("imgurl")) {
-            String url = arr.getJSONObject(0).getJSONObject("imgurl").getString("value");
-            url = cacheImage(url);
-            return url;
-        }
-        return null;
+        return imgUrl;
     }
-	
-	private static String cacheImage(String url){
-		
-		String imageID = null;
+
+    private static String cacheImage(String url){
+
+        String imageID = null;
         if(url.contains("/image/m"))
             imageID = "freebase_" + url.substring(url.indexOf("/image/m/") + 9, url.indexOf("?")) + ".jpg";
         else
             imageID = "wikipedia_" + url.substring(url.lastIndexOf("/") + 1);
 
-    	File image = new File(getEnitiesPath() + imageID);
-    	if(!image.exists()){
-	    	try {
-				URL imageUrl = new URL(url);
-				ReadableByteChannel rbc = Channels.newChannel(imageUrl.openStream());
-				FileOutputStream fos = new FileOutputStream(image);
-				long byteCount = fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-				fos.close();
+        File image = new File(getEnitiesPath() + imageID);
+        if(!image.exists()){
+            try {
+                URL imageUrl = new URL(url);
+                ReadableByteChannel rbc = Channels.newChannel(imageUrl.openStream());
+                FileOutputStream fos = new FileOutputStream(image);
+                long byteCount = fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+                fos.close();
 
                 if(byteCount == 0)
                     return null;
-				
-			} catch (IOException e) {
-				return null;
-			}
-    	}
-    	
-    	return relativeEntitiesPath + imageID;
-	}
+
+            } catch (IOException e) {
+                return null;
+            }
+        }
+
+        return relativeEntitiesPath + imageID;
+    }
 
     List<String> evalQueryResult(String query)
     {
@@ -173,66 +145,67 @@ public abstract class BaseService implements ServletContextAware {
         }
         return mids;
     }
-	
-	protected static JSONArray getJSONArray(String query) throws IOException{
-		
-		query = URLEncoder.encode(query, "UTF-8");
-		
-		query = baseFreebaseQueryUrl + query;
-		
-		String resultString = getResponse(query);
-		
-		JSONObject result = new JSONObject(resultString);
-    	JSONArray arr = result.getJSONObject("results").getJSONArray("bindings");
-    	
-    	return arr;
-	}
-	
+
+    protected static JSONArray getJSONArray(String query) throws IOException{
+
+        query = URLEncoder.encode(query, "UTF-8");
+
+        query = baseFreebaseQueryUrl + query;
+
+        String resultString = getResponse(query);
+
+        JSONObject result = new JSONObject(resultString);
+        JSONArray arr = result.getJSONObject("results").getJSONArray("bindings");
+
+        return arr;
+    }
+
     protected static String getResponse(String targetUrl) throws IOException{
-    	URL url;
-    	HttpURLConnection connection = null;
-    	
-    	String result = "";
-    	
-          //Create connection
-          url = new URL(targetUrl);
-          connection = (HttpURLConnection)url.openConnection();
-          connection.setRequestMethod("GET");
+        URL url;
+        HttpURLConnection connection = null;
 
-          connection.setUseCaches (false);
-          connection.setDoInput(true);
-          connection.setDoOutput(true);
+        String result = "";
 
-          //Get Response    
-          InputStream is = connection.getInputStream();
-          BufferedReader rd = new BufferedReader(new InputStreamReader(is));
-          String line;
-          StringBuffer response = new StringBuffer(); 
-          while((line = rd.readLine()) != null) {
+        //Create connection
+        url = new URL(targetUrl);
+        connection = (HttpURLConnection)url.openConnection();
+        connection.setRequestMethod("GET");
+
+        connection.setUseCaches (false);
+        connection.setDoInput(true);
+        connection.setDoOutput(true);
+
+        //Get Response
+        InputStream is = connection.getInputStream();
+        BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+        String line;
+        StringBuffer response = new StringBuffer();
+        while((line = rd.readLine()) != null) {
             response.append(line);
             response.append('\r');
-          }
-          
-          rd.close();
-          
-          result = response.toString();
+        }
 
-            if(connection != null) {
-              connection.disconnect(); 
-            }
-        
+        rd.close();
+
+        result = response.toString();
+
+        if(connection != null) {
+            connection.disconnect();
+        }
+
         return result;
     }
-    
-    private static  String getEnitiesPath(){
-    	return servletContext.getRealPath(relativeEntitiesPath);
-    }
-    
-    public void setServletContext(ServletContext servletContext) {
-		this.servletContext = servletContext;
-	}
 
-	public ServletContext getServletContext() {
-		return servletContext;
-	}
+    private static  String getEnitiesPath(){
+        return servletContext.getRealPath(relativeEntitiesPath);
+    }
+
+    public void setServletContext(ServletContext servletContext) {
+        this.servletContext = servletContext;
+    }
+
+    public ServletContext getServletContext() {
+        return servletContext;
+    }
+
 }
