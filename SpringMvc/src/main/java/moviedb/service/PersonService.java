@@ -25,6 +25,8 @@ public class PersonService extends BaseService implements IPersonService {
     private static Map<String, Person> personCache = new HashMap<String, Person>();
 
     public Person getPerson(String mid){
+        if(personCache.keySet().contains(mid))
+            return personCache.get(mid);
         List<Person> movs = getPersons(Arrays.asList(mid));
         if(movs.size() > 0)
             return movs.get(0);
@@ -46,7 +48,7 @@ public class PersonService extends BaseService implements IPersonService {
                 "FILTER(?award = ns:%s  && YEAR(?year) = %d)} \n" +
                 "GROUP BY ?actor ?actorName ?year ORDER BY DESC(?year) ";
     	query = String.format(query, mid, year);
-    	return getPersons(evalQueryResult(query));
+    	return resolveMidList(evalQueryResult(query));
     }
     
     public List<Person> search(String term, int count){
@@ -66,6 +68,14 @@ public class PersonService extends BaseService implements IPersonService {
     
     private static  List<Person> getPersons(List<String> mids){
     	List<Person> persons = new ArrayList<Person>();
+        List<String> rejects = new ArrayList<String>();
+
+        for(String mid : mids) {
+            if (personCache.keySet().contains(mid))
+                persons.add(personCache.get(mid));
+            else
+                rejects.add(mid);
+        }
         //extracts basic Informations about the person
         String query = "PREFIX ns: <http://rdf.freebase.com/ns/> \n" +
                 "PREFIX key: <http://rdf.freebase.com/key/> \n" +
@@ -82,7 +92,7 @@ public class PersonService extends BaseService implements IPersonService {
                 "                OPTIONAL{?p ns:people.person.nationality / ns:type.object.name ?country .  }\n" +
                 "                OPTIONAL{?p ns:people.person.gender / ns:type.object.name ?gender.  }\n" +
                 "                FILTER ( ?p in ( ";
-        for(String mid : mids)
+        for(String mid : rejects)
         {
             query += "ns:" + mid + ",";
         }

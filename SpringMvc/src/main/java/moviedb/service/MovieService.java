@@ -14,6 +14,8 @@ public class MovieService  extends BaseService implements IMovieService {
 
     private Map<String, Movie> movieCache = new HashMap<String, Movie>();
     public Movie getMovie(String mid){
+        if(movieCache.keySet().contains(mid))
+            return movieCache.get(mid);
     	List<Movie> movs = getMovies(Arrays.asList(mid));
         if(movs.size() > 0)
     	    return movs.get(0);
@@ -76,21 +78,28 @@ public class MovieService  extends BaseService implements IMovieService {
     
     private List<Movie> getMovies(List<String> mids){
     	List<Movie> movies = new ArrayList<Movie>();
+        List<String> rejects = new ArrayList<String>();
+
+        for(String mid : mids) {
+            if (movieCache.keySet().contains(mid))
+                movies.add(movieCache.get(mid));
+            else
+                rejects.add(mid);
+        }
         //extracts basic Informations about the movie
         String query = "PREFIX ns: <http://rdf.freebase.com/ns/> \n" +
                 "PREFIX key: <http://rdf.freebase.com/key/> \n" +
-                "SELECT (group_concat(distinct ?f;separator=\",&\") as ?film) ?wikiId ?filmTitle (group_concat(distinct ?website;separator=\",&\") as ?websites) (group_concat(distinct ?country;separator=\",&\") as ?countries) ?series (group_concat(distinct ?taglin;separator=\",&\") as ?tagline) (group_concat(distinct ?description;separator=\",&\") as ?descriptions) \n" +
+                "SELECT (group_concat(distinct ?f;separator=\",&\") as ?film) ?wikiId ?filmTitle (group_concat(distinct ?website;separator=\",&\") as ?websites) (group_concat(distinct ?country;separator=\",&\") as ?countries) ?series (group_concat(distinct ?description;separator=\",&\") as ?descriptions) \n" +
                 "FROM <http://fmb.org>\n" +
                 "                WHERE { \n" +
                 "                OPTIONAL{?f ns:type.object.name ?filmTitle. }\n" +
                 "                OPTIONAL{?f  key:wikipedia.en_id ?wikiId. }\n" +
                 "                OPTIONAL{?f  ns:common.topic.official_website ?website.}\n" +
-                "                OPTIONAL{?f ns:film.film.tagline ?taglin.  }\n" +
                 "                OPTIONAL{?f ns:common.topic.description ?description.  }\n" +
                 "                OPTIONAL{?f ns:film.film.country / ns:type.object.name ?country.  }\n" +
                 "                OPTIONAL{?f ns:film.film.film_series / ns:type.object.name ?series.  }\n" +
                 "FILTER ( ?f in ( ";
-        for(String mid : mids)
+        for(String mid : rejects)
         {
             query += "ns:" + mid + ",";
         }
@@ -213,7 +222,7 @@ public class MovieService  extends BaseService implements IMovieService {
                         }
                     }
                     if (filmJson.has("genres")) {
-                        movie.getCountries().clear();
+                        movie.getGenres().clear();
                         for (String c : filmJson.getJSONObject("genres").getString("value").split(",\\&")) {
                             movie.getGenres().add(c);
                         }
@@ -231,13 +240,13 @@ public class MovieService  extends BaseService implements IMovieService {
                         }
                     }
                     if (filmJson.has("producers")) {
-                        movie.getCountries().clear();
+                        movie.getProducers().clear();
                         for (String c : filmJson.getJSONObject("producers").getString("value").split(",\\&")) {
                             movie.addProducer(c);
                         }
                     }
                     if (filmJson.has("writers")) {
-                        movie.getCountries().clear();
+                        movie.getWriters().clear();
                         for (String c : filmJson.getJSONObject("writers").getString("value").split(",\\&")) {
                             movie.addWriter(c);
                         }
